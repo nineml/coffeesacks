@@ -50,7 +50,6 @@ configurations.all {
 
 configurations {
   transform.extendsFrom documentation
-  testsuite.extendsFrom testImplementation
 }
 
 dependencies {
@@ -98,20 +97,6 @@ docker_container.configure {
 
 // ============================================================
 
-task testSuite(type: JavaExec, dependsOn: jar) {
-  inputs.files fileTree(dir: "${buildDir}/classes/java/main")
-  inputs.files fileTree(dir: "${buildDir}/classes/java/test")
-  inputs.files fileTree(dir: "${buildDir}/resources/main")
-  inputs.files fileTree(dir: "${buildDir}/resources/test")
-  inputs.files fileTree(dir: "${projectDir}/ixml/tests")
-  inputs.file "${projectDir}/src/test/resources/test-suite-exceptions"
-
-  classpath = configurations.testsuite
-  main = 'org.nineml.coffeesacks.TestDriver'
-  args = ['-e:src/test/resources/test-suite-exceptions',
-          'ixml/tests/test-catalog.xml']
-}
-
 jar {
   archiveBaseName = "${sacksTitle}-${sacksVersion}"
   manifest {
@@ -123,7 +108,7 @@ jar {
 }
 
 javadoc {
-  inputs.file "${projectDir}/src/main/java/overview.html"
+  //inputs.file "${projectDir}/src/main/java/overview.html"
   inputs.files fileTree(dir: "${projectDir}/src/main")
 
   title 'An Invisible XML Parsing API'
@@ -132,13 +117,13 @@ javadoc {
   exclude 'org/nineml/coffeesacks/BuildConfig.java'
   exclude 'org/nineml/coffeesacks/parser/CommonBuilder.java'
   options.showFromPublic()
-  options.overview = 'src/main/java/overview.html'
+  //options.overview = 'src/main/java/overview.html'
   options.encoding('utf-8')
   options.docEncoding('utf-8')
   options.charSet('utf-8')
 }
 
-task dist(dependsOn:["test", "testSuite", "jar", "javadoc"]) {
+task dist(dependsOn:["test", "jar", "javadoc"]) {
   doLast {
     mkdir "${buildDir}/stage"
     mkdir "${buildDir}/stage/docs"
