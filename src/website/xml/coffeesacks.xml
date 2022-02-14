@@ -3,6 +3,11 @@
       xmlns:xlink="http://www.w3.org/1999/xlink"
       version="5.2">
 <info>
+<mediaobject role="cover">
+  <imageobject>
+    <imagedata fileref="images/CoffeeSacks.svg"/>
+  </imageobject>
+</mediaobject>
 <title>CoffeeSacks</title>
 <subtitle>A Saxon API for Invisible XML</subtitle>
 <author>
