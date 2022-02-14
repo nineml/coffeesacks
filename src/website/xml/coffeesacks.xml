@@ -5,7 +5,7 @@
 <info>
 <mediaobject role="cover">
   <imageobject>
-    <imagedata fileref="images/CoffeeSacks.svg"/>
+    <imagedata fileref="images/CoffeeSacks.png"/>
   </imageobject>
 </mediaobject>
 <title>CoffeeSacks</title>
