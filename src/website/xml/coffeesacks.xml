@@ -17,8 +17,13 @@
 
 <preface>
 <title>Introduction</title>
-
 <para>Hello world.</para>
 </preface>
+
+<chapter>
+<title>Extension functions</title>
+
+<para>…</para>
+</chapter>
 
 </book>
