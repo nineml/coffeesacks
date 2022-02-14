@@ -25,7 +25,7 @@ plugins {
   id "maven-publish"
   id "signing"
   id 'com.github.gmazzo.buildconfig' version "3.0.3"
-  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.3'
+  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.4'
   id 'com.nwalsh.gradle.relaxng.validate' version '0.0.8'
   id 'com.nwalsh.gradle.docker.container' version '0.0.3'
 }
@@ -87,7 +87,6 @@ ext {
 }
 
 saxon.configure {
-  classpath configurations.transform
   initializer 'org.docbook.xsltng.extensions.Register'
 }
 
@@ -173,17 +172,17 @@ tasks.withType(JavaCompile) {
 
 task manual_xinclude(type: SaxonXsltTask, dependsOn: ["copyResources"]) {
   inputs.files fileTree(dir: "${projectDir}/src/website/xml")
-  inputs.file "${projectDir}/tools/xinclude.xsl"
+  inputs.file "${projectDir}/website/xinclude.xsl"
 
   input "${projectDir}/src/website/xml/coffeesacks.xml"
-  stylesheet "${projectDir}/tools/xinclude.xsl"
+  stylesheet "${projectDir}/website/xinclude.xsl"
   output "${buildDir}/tmp/coffeesacks.xml"
 }
 
 task manual_validate(type: RelaxNGValidateTask, dependsOn: ["manual_xinclude"]) {
   input manual_xinclude.outputs.files.singleFile
   output "${buildDir}/xml/coffeesacks.xml"
-  schema "${projectDir}/tools/docbook.rnc"
+  schema "${projectDir}/website/docbook.rnc"
   compact true
 }
 
@@ -250,6 +249,7 @@ task copyJarResources() {
 }
 
 task copyStaticResources() {
+  inputs.files fileTree(dir: "${projectDir}/website/resources")
   inputs.files fileTree(dir: "${projectDir}/src/website/resources")
   inputs.files fileTree(dir: "${projectDir}/src/website/xml")
   outputs.files fileTree(dir: "${buildDir}/website")
@@ -259,6 +259,13 @@ task copyStaticResources() {
     copy {
       into "${buildDir}/website"
       from "${projectDir}/src/website/resources"
+    }
+  }
+
+  doLast {
+    copy {
+      into "${buildDir}/website"
+      from "${projectDir}/website/resources"
     }
   }
 
