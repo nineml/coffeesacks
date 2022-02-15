@@ -114,6 +114,12 @@ var activeTableTab = "activeTableTab";
 <br>
 <pre>public class <span class="typeNameLabel">ParseUriFunction</span>
 extends net.sf.saxon.lib.ExtensionFunctionDefinition</pre>
+<div class="block">A Saxon extension function parse a document against an Invisible XML grammar.
+
+ <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
+ <code>cs:parse-uri(grammar, href, [, options])</code> loads the document identified
+ by <code>href</code>, parses it against the grammar, and returns the result.
+ </p></div>
 </li>
 </ul>
 </div>
