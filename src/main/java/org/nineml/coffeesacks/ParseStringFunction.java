@@ -16,9 +16,18 @@ import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.nineml.coffeesacks.utils.ParseUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
+/**
+ * A Saxon extension function parse a string against an Invisible XML grammar.
+ *
+ * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
+ * <code>cs:parse-string(grammar, string, [, options])</code> parses the string against
+ * the grammar and returns the result.
+ * </p>
+ */
 public class ParseStringFunction extends ExtensionFunctionDefinition {
     private static final QName _cache = new QName("", "cache");
 
@@ -93,8 +102,11 @@ public class ParseStringFunction extends ExtensionFunctionDefinition {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     Serializer serializer = processor.newSerializer(baos);
                     serializer.serialize(grammar);
-                    parser = InvisibleXml.parserFromVxmlString(baos.toString());
-                    if ("true".equals(options.getOrDefault(_cache, "true"))) {
+                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+                    parser = InvisibleXml.getParser(bais, grammar.getBaseURI());
+
+                    if ("true".equals(options.getOrDefault(_cache, "true"))
+                            || "yes".equals(options.getOrDefault(_cache, "yes"))) {
                         cache.nodeCache.put(grammar, parser);
                     }
                 }
