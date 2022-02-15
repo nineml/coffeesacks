@@ -8,13 +8,15 @@ import java.util.HashMap;
 
 public class ParserCache {
     protected HashMap<NodeInfo, InvisibleXmlParser> nodeCache = new HashMap<>();
+    protected HashMap<URI, NodeInfo> uriCache = new HashMap<>();
 
     protected ParserCache() {
         // nop
     }
 
-    protected void flush() {
+    protected void clear() {
         nodeCache.clear();
+        uriCache.clear();
     }
 
 }

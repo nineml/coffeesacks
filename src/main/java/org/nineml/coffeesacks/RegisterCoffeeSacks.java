@@ -12,6 +12,6 @@ public class RegisterCoffeeSacks implements Initializer {
         config.registerExtensionFunction(new GrammarFunction(cache));
         config.registerExtensionFunction(new ParseStringFunction(cache));
         config.registerExtensionFunction(new ParseUriFunction(cache));
-        config.registerExtensionFunction(new FlushCacheFunction(cache));
+        config.registerExtensionFunction(new ClearCacheFunction(cache));
     }
 }

@@ -1,5 +1,7 @@
 package org.nineml.coffeesacks;
 
+import net.sf.saxon.expr.Expression;
+import net.sf.saxon.expr.StaticContext;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.lib.ExtensionFunctionCall;
 import net.sf.saxon.lib.ExtensionFunctionDefinition;
@@ -14,17 +16,29 @@ import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.nineml.coffeesacks.utils.ParseUtils;
+import org.xml.sax.InputSource;
+import org.xmlresolver.utils.URIUtils;
 
+import javax.xml.transform.sax.SAXSource;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.net.URI;
+import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 public class GrammarFunction extends ExtensionFunctionDefinition {
     private static final QName _type = new QName("", "type");
+    private static final QName _encoding = new QName("", "encoding");
+    private static final QName _cache = new QName("", "cache");
+
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "grammar");
 
-    public GrammarFunction(ParserCache cache) {
+    private final ParserCache cache;
 
+    public GrammarFunction(ParserCache cache) {
+        this.cache = cache;
     }
 
     @Override
@@ -57,10 +71,30 @@ public class GrammarFunction extends ExtensionFunctionDefinition {
         return new GrammarCall();
     }
 
-    private static class GrammarCall extends ExtensionFunctionCall {
+    private class GrammarCall extends ExtensionFunctionCall {
+        private URI baseURI = null;
+
+        @Override
+        public void supplyStaticContext(StaticContext context, int locationId, Expression[] arguments) throws XPathException {
+            if (context.getStaticBaseURI() != null && !"".equals(context.getStaticBaseURI())) {
+                baseURI = URIUtils.resolve(URIUtils.cwd(), context.getStaticBaseURI());
+            }
+        }
+
         @Override
         public Sequence call(XPathContext xPathContext, Sequence[] sequences) throws XPathException {
             String grammarHref = sequences[0].head().getStringValue();
+            URI grammarURI;
+            if (baseURI != null) {
+                grammarURI = baseURI.resolve(grammarHref);
+            } else {
+                grammarURI = URIUtils.resolve(URIUtils.cwd(), grammarHref);
+            }
+
+            if (cache.uriCache.containsKey(grammarURI)) {
+                return cache.uriCache.get(grammarURI);
+            }
+
             HashMap<QName,String> options;
             if (sequences.length > 1) {
                 Item item = sequences[1].head();
@@ -77,29 +111,39 @@ public class GrammarFunction extends ExtensionFunctionDefinition {
                 // Can this ever fail?
                 Processor processor = (Processor) xPathContext.getConfiguration().getProcessor();
                 XdmNode grammar = null;
-                String grammarType = options.getOrDefault(_type, "ixml");
 
-                if ("ixml".equals(grammarType)) {
-                    InvisibleXmlParser parser = InvisibleXml.invisibleXmlParser();
-                    InvisibleXmlDocument document = parser.parseFromFile(grammarHref);
-
-                    DocumentBuilder builder = processor.newDocumentBuilder();
-                    BuildingContentHandler handler = builder.newBuildingContentHandler();
-                    document.getTree(handler);
-                    grammar = handler.getDocumentNode();
-                } else if ("xml".equals(grammarType) || "vxml".equals(grammarType)) {
-                    DocumentBuilder builder = processor.newDocumentBuilder();
-                    grammar = builder.build(new File(grammarHref));
-                } else if ("compiled".equals(grammarType) || "cxml".equals(grammarType)) {
-                    throw new UnsupportedOperationException("Loading compiled grammars is not supported yet");
+                InvisibleXmlParser parser = null;
+                if (options.containsKey(_type)) {
+                    String grammarType = options.get(_type);
+                    URLConnection conn = grammarURI.toURL().openConnection();
+                    if ("ixml".equals(grammarType)) {
+                        String encoding = options.getOrDefault(_encoding, "UTF-8");
+                        parser = InvisibleXml.getParserFromIxml(conn.getInputStream(), encoding);
+                    } else if ("xml".equals(grammarType) || "vxml".equals(grammarType)) {
+                        parser = InvisibleXml.getParserFromVxml(conn.getInputStream(), grammarURI.toString());
+                    } else if ("cxml".equals(grammarType) || "compiled".equals(grammarType)) {
+                        parser = InvisibleXml.getParserFromCxml(conn.getInputStream(), grammarURI.toString());
+                    } else {
+                        throw new IllegalArgumentException("Unexpected grammar type: " + grammarType);
+                    }
                 } else {
-                    throw new XPathException("Unexpected grammar type: " + grammarType);
+                    parser = InvisibleXml.getParser(grammarURI);
                 }
+
+                DocumentBuilder builder = processor.newDocumentBuilder();
+                ByteArrayInputStream bais = new ByteArrayInputStream(parser.getCompiledParser().getBytes(StandardCharsets.UTF_8));
+                SAXSource source = new SAXSource(new InputSource(bais));
+                grammar = builder.build(source);
+
+                if ("true".equals(options.getOrDefault(_cache, "true"))
+                    || "yes".equals(options.getOrDefault(_cache, "yes"))) {
+                    cache.uriCache.put(grammarURI, grammar.getUnderlyingNode());
+                }
+
                 return grammar.getUnderlyingNode();
             } catch (Exception ex) {
                 throw new XPathException(ex);
             }
         }
-
     }
 }

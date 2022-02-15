@@ -14,6 +14,7 @@
   <doc>
     <xsl:sequence select="cs:parse-uri($grammar, 'src/test/resources/date.inp')"/>
     <xsl:sequence select="cs:parse-uri($grammar, resolve-uri('date.inp', base-uri()))"/>
+    <xsl:sequence select="cs:parse($grammar, '15 February 2022')"/>
   </doc>
 </xsl:template>
 

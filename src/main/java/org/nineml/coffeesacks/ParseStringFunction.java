@@ -16,6 +16,7 @@ import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.nineml.coffeesacks.utils.ParseUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
@@ -23,7 +24,7 @@ public class ParseStringFunction extends ExtensionFunctionDefinition {
     private static final QName _cache = new QName("", "cache");
 
     private static final StructuredQName qName =
-            new StructuredQName("", "http://nineml.com/ns/coffeesacks", "parse-string");
+            new StructuredQName("", "http://nineml.com/ns/coffeesacks", "parse");
 
     private final ParserCache cache;
 
@@ -93,8 +94,11 @@ public class ParseStringFunction extends ExtensionFunctionDefinition {
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     Serializer serializer = processor.newSerializer(baos);
                     serializer.serialize(grammar);
-                    parser = InvisibleXml.parserFromVxmlString(baos.toString());
-                    if ("true".equals(options.getOrDefault(_cache, "true"))) {
+                    ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+                    parser = InvisibleXml.getParser(bais, grammar.getBaseURI());
+
+                    if ("true".equals(options.getOrDefault(_cache, "true"))
+                            || "yes".equals(options.getOrDefault(_cache, "yes"))) {
                         cache.nodeCache.put(grammar, parser);
                     }
                 }
