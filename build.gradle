@@ -199,6 +199,7 @@ task manual_augment(type: SaxonXsltTask, dependsOn: ["manual_validate"]) {
 
 task website(type: SaxonXsltTask, dependsOn: ["manual_augment", "javadoc"]) {
   inputs.file "${projectDir}/tools/docbook.xsl"
+  inputs.file "${projectDir}/tools/xpath.xsl"
   outputs.files fileTree(dir: "${buildDir}/website")
 
   input manual_augment.outputs.files.singleFile

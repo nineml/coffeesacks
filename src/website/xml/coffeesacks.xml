@@ -22,13 +22,349 @@
 
 <preface>
 <title>Introduction</title>
-<para>Hello world.</para>
+
+<para>CoffeeSacks provides a set of
+<link xlink:href="https://saxonica.com/">Saxon</link> extension functions
+for processing Invisible XML. It is part of the
+<link xlink:href="https://nineml.org/">NineML</link> family of Invisible
+XML tools.</para>
+
 </preface>
 
 <chapter>
-<title>Extension functions</title>
+<title>Invisible XML in Saxon</title>
 
-<para>…</para>
+<para>The CoffeeSacks extension functions allow a stylesheet to load
+an Invisible XML grammar and process an input against it. Grammar processing
+can be expensive. To mitigate this cost, by default CoffeeSacks keeps a cache
+of parsed grammar.</para>
+
+<para>The class <classname>org.nineml.coffeesacks.RegisterCoffeeSacks</classname>
+is suitable for registering the extension functions to a Saxon HE processor.</para>
+
+<para>All of the functions are in the namespace
+<uri>http://nineml.com/ns/coffeesacks</uri> which is taken to be bound to
+the <code>cs:</code> namespace prefix in this document.</para>
+
+<para>Given an Invisible XML grammar for dates in <uri>dates.ixml</uri>:</para>
+
+<programlisting>date: s?, day, -s, month, (-s, year)? .
+-s: -" "+ .
+day: digit, digit? .
+-digit: "0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9".
+month: "January"; "February"; "March"; "April";
+       "May"; "June"; "July"; "August";
+       "September"; "October"; "November"; "December".
+year: (digit, digit)?, digit, digit .</programlisting>
+
+<para>A stylesheet like the following will parse a string against that
+grammar and return the result:</para>
+
+<programlisting><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                xmlns:cs="http://nineml.com/ns/coffeesacks"
+                exclude-result-prefixes="#all"
+                version="3.0">
+
+<xsl:template name="xsl:initial-template">
+  <xsl:variable name="grammar" select="cs:grammar('date.ixml')"/>
+  <doc>
+    <xsl:sequence select="cs:parse-string($grammar, '15 February 2022')"/>
+  </doc>
+</xsl:template>
+
+</xsl:stylesheet>]]></programlisting>
+
+<para>Returning:</para>
+
+<programlisting><![CDATA[<doc>
+   <date>
+      <day>15</day>
+      <month>February</month>
+      <year>2022</year>
+   </date>
+</doc>]]></programlisting>
+
+</chapter>
+
+<chapter>
+<title>cs:grammar</title>
+
+<para>Before it can be used, a grammar must be loaded. You can load Invisible XML
+grammars in either the text or XML syntax. You can also load grammars in the
+<link xlink:href="https://coffeegrinder.nineml.org/">CoffeeGrinder</link> compiled
+format.</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:grammar</function>
+</funcdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>href</parameter>
+<phrase role="refpurpose">The grammar location</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:grammar</function>
+</funcdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>href</parameter>
+<phrase role="refpurpose">The grammar location</phrase>
+</paramdef>
+<paramdef>
+<type>map(xs:QName, xs:string)</type>
+<parameter>options</parameter>
+<phrase role="refpurpose">Grammar options</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>The following options are recognized:</para>
+
+<variablelist>
+<varlistentry>
+<term><code>cache</code></term>
+<listitem>
+<para>If unspecified or specified with the value “<code>true</code>”
+or “<code>yes</code>”, the grammar will be cached. If any other value
+is specified, the grammar will not be cached.
+</para>
+<para>Caching the grammar saves the mapping between the URI and the
+parsed XML node.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>type</code></term>
+<listitem>
+<para>Identifies the type of grammar to parse:</para>
+  <variablelist>
+  <varlistentry>
+  <term><code>ixml</code></term>
+  <listitem>
+  <para>For Invisible XML in text format.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>xml</code> or <code>vxml</code></term>
+  <listitem>
+  <para>For Invisible XML in XML format.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>cxml</code> or <code>compiled</code></term>
+  <listitem>
+  <para>For a grammar in the compiled
+<link xlink:href="https://coffeegrinder.nineml.org/">CoffeeGrinder</link> format.
+  </para>
+  </listitem>
+  </varlistentry>
+  </variablelist>
+<para>It is an error to specify any other value.</para>
+<para>This is not usually necessary. The grammar compiler will “sniff” the first 4,095
+bytes of the file to identify the grammar which is usually sufficient.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>encoding</code></term>
+<listitem>
+<para>Specifies the encoding to use for Invisible XML grammars in the text format.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</chapter>
+
+<chapter>
+<title>cs:parse-uri</title>
+
+<para>Loads the document at the specified URI and attempts to parse it with
+the grammar provided. The result will be an XML document that is either the parsed
+result or a document that specifies that an error occurred.</para>
+
+<para>The grammar provided must be in XML format. This can be obtained with the
+<function>cs:grammar</function> function or, in the case of XML format grammars,
+through any convenient means.</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:parse-uri</function>
+</funcdef>
+<paramdef>
+<type>node</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The ixml grammar</phrase>
+</paramdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>href</parameter>
+<phrase role="refpurpose">The document location</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:parse-uri</function>
+</funcdef>
+<paramdef>
+<type>node</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The ixml grammar</phrase>
+</paramdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>href</parameter>
+<phrase role="refpurpose">The document location</phrase>
+</paramdef>
+<paramdef>
+<type>map(xs:QName, xs:string)</type>
+<parameter>options</parameter>
+<phrase role="refpurpose">Parsing options</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>The following options are recognized.</para>
+
+<variablelist>
+<varlistentry>
+<term><code>cache</code></term>
+<listitem>
+<para>If unspecified or specified with the value “<code>true</code>”
+or “<code>yes</code>”, the grammar will be cached. If any other value
+is specified, the grammar will not be cached.
+</para>
+<para>Caching at this level saves the mapping between the XML representation
+of the grammar and the underlying Invisible XML parser object.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>encoding</code></term>
+<listitem>
+<para>Specifies the encoding to use for the input document.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</chapter>
+
+<chapter>
+<title>cs:parse-string</title>
+
+<para>Attempts to parse the input string
+the grammar provided. The result will be an XML document that is either the parsed
+result or a document that specifies that an error occurred.</para>
+
+<para>The grammar provided must be in XML format. This can be obtained with the
+<function>cs:grammar</function> function or, in the case of XML format grammars,
+through any convenient means.</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:parse-string</function>
+</funcdef>
+<paramdef>
+<type>node</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The ixml grammar</phrase>
+</paramdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>input</parameter>
+<phrase role="refpurpose">The input</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:parse-string</function>
+</funcdef>
+<paramdef>
+<type>node</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The ixml grammar</phrase>
+</paramdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>input</parameter>
+<phrase role="refpurpose">The input</phrase>
+</paramdef>
+<paramdef>
+<type>map(xs:QName, xs:string)</type>
+<parameter>options</parameter>
+<phrase role="refpurpose">Parsing options</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<variablelist>
+<varlistentry>
+<term><code>cache</code></term>
+<listitem>
+<para>If unspecified or specified with the value “<code>true</code>”
+or “<code>yes</code>”, the grammar will be cached. If any other value
+is specified, the grammar will not be cached.
+</para>
+<para>Caching at this level saves the mapping between the XML representation
+of the grammar and the underlying Invisible XML parser object.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</chapter>
+
+<chapter>
+<title>cs:clear-cache</title>
+
+<para>Clears the grammar cache.</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>xs:boolean</type>
+<function>cs:clear-cache</function>
+</funcdef>
+<void/>
+</funcprototype>
+</funcsynopsis>
+
+</chapter>
+
+<chapter>
+<title>RegisterCoffeeSacks</title>
+
+<para>The class <classname>org.nineml.coffeesacks.RegisterCoffeeSacks</classname>
+can be passed to the Saxon processor on the command line as the value of the
+<option>-init</option> option to register the extension functions.</para>
+
+<para>To use this class within your own application code, instantiate the class
+and pass the underlying configuration to the <methodname>initialize</methodname> method:
+</para>
+
+<programlisting language="java" linenumbering="unnumbered"
+>RegisterCoffeeSacks register = new RegisterCoffeeSacks();
+register.initialize(processor.getUnderlyingConfiguration());</programlisting>
+
+<para>This will register the functions with the processor.</para>
+
 </chapter>
 
 </book>
