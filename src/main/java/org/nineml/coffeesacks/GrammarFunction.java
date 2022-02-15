@@ -27,7 +27,12 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
-public class GrammarFunction extends ExtensionFunctionDefinition {
+/**
+ * A Saxon extension function load an Invisible XML grammar.
+ * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
+ * <code>cs:grammar(href [, options])</code> loads a grammar.
+ * </p>
+ */public class GrammarFunction extends ExtensionFunctionDefinition {
     private static final QName _type = new QName("", "type");
     private static final QName _encoding = new QName("", "encoding");
     private static final QName _cache = new QName("", "cache");

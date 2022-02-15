@@ -9,9 +9,17 @@ import net.sf.saxon.value.QNameValue;
 
 import java.util.HashMap;
 
+/**
+ * Utility functions for the parsing classes.
+ */
 public class ParseUtils {
-    private static Boolean isWindows = null;
-
+    /**
+     * Parse an XdmMap into a HashMap.
+     * <p>This function also turns the keys into QNames.</p>
+     * @param item the XdmMap item
+     * @return the HashMap version
+     * @throws XPathException if the key value cannot be converted into a string.
+     */
     public static HashMap<QName,String> parseMap(MapItem item) throws XPathException {
         HashMap<QName,String> options = new HashMap<>();
         for (KeyValuePair kv : item.keyValuePairs()) {

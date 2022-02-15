@@ -5,6 +5,9 @@ import net.sf.saxon.lib.Initializer;
 
 import javax.xml.transform.TransformerException;
 
+/**
+ * An initializer class for registering the CoffeeSacks extension functions.
+ */
 public class RegisterCoffeeSacks implements Initializer {
     @Override
     public void initialize(Configuration config) throws TransformerException {

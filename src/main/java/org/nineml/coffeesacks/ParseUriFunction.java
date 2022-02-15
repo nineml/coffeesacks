@@ -25,6 +25,14 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.util.HashMap;
 
+/**
+ * A Saxon extension function parse a document against an Invisible XML grammar.
+ *
+ * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
+ * <code>cs:parse-uri(grammar, href, [, options])</code> loads the document identified
+ * by <code>href</code>, parses it against the grammar, and returns the result.
+ * </p>
+ */
 public class ParseUriFunction extends ExtensionFunctionDefinition {
     private static final QName _cache = new QName("", "cache");
     private static final QName _encoding = new QName("", "encoding");

@@ -20,11 +20,19 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 
+/**
+ * A Saxon extension function parse a string against an Invisible XML grammar.
+ *
+ * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
+ * <code>cs:parse-string(grammar, string, [, options])</code> parses the string against
+ * the grammar and returns the result.
+ * </p>
+ */
 public class ParseStringFunction extends ExtensionFunctionDefinition {
     private static final QName _cache = new QName("", "cache");
 
     private static final StructuredQName qName =
-            new StructuredQName("", "http://nineml.com/ns/coffeesacks", "parse");
+            new StructuredQName("", "http://nineml.com/ns/coffeesacks", "parse-string");
 
     private final ParserCache cache;
 

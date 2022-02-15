@@ -9,6 +9,13 @@ import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.BooleanValue;
 import net.sf.saxon.value.SequenceType;
 
+/**
+ * A Saxon extension function to clear the grammar cache.
+ *
+ * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
+ * <code>cs:clear-cache()</code> clears the cache.
+ * </p>
+ */
 public class ClearCacheFunction extends ExtensionFunctionDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "clear-cache");
