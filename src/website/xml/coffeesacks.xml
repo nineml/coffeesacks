@@ -278,7 +278,7 @@ of the grammar and the underlying Invisible XML parser object.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
-  <term><code>json-text</code></term>
+  <term><code>json-tree</code> or <code>json-text</code></term>
   <listitem>
   <para>Returns a “text” map. This map structure can represent any tree.
   </para>
@@ -389,7 +389,7 @@ of the grammar and the underlying Invisible XML parser object.</para>
   </listitem>
   </varlistentry>
   <varlistentry>
-  <term><code>json-text</code></term>
+  <term><code>json-text</code> or <code>json-text</code></term>
   <listitem>
   <para>Returns a “text” map. This map structure can represent any tree.
   </para>
