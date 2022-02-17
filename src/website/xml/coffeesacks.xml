@@ -184,36 +184,6 @@ bytes of the file to identify the grammar which is usually sufficient.</para>
 </para>
 </listitem>
 </varlistentry>
-<varlistentry>
-<term><code>format</code></term>
-<listitem>
-<para>Identifies the format of the result:</para>
-  <variablelist>
-  <varlistentry>
-  <term><code>xml</code></term>
-  <listitem>
-  <para>Returns an XML node.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>json</code> or <code>json-data</code></term>
-  <listitem>
-  <para>Returns a “data” map. This method will fail if the result contains mixed content.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>json-text</code></term>
-  <listitem>
-  <para>Returns a “text” map. This map structure can represent any tree.
-  </para>
-  </listitem>
-  </varlistentry>
-  </variablelist>
-<para>It is an error to specify any other value.</para>
-</listitem>
-</varlistentry>
 </variablelist>
 </chapter>
 
@@ -286,6 +256,36 @@ is specified, the grammar will not be cached.
 </para>
 <para>Caching at this level saves the mapping between the XML representation
 of the grammar and the underlying Invisible XML parser object.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>format</code></term>
+<listitem>
+<para>Identifies the format of the result:</para>
+  <variablelist>
+  <varlistentry>
+  <term><code>xml</code></term>
+  <listitem>
+  <para>Returns an XML node.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>json</code> or <code>json-data</code></term>
+  <listitem>
+  <para>Returns a “data” map. This method will fail if the result contains mixed content.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>json-text</code></term>
+  <listitem>
+  <para>Returns a “text” map. This map structure can represent any tree.
+  </para>
+  </listitem>
+  </varlistentry>
+  </variablelist>
+<para>It is an error to specify any other value.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -416,6 +416,9 @@ of the grammar and the underlying Invisible XML parser object.</para>
 <void/>
 </funcprototype>
 </funcsynopsis>
+
+<para>Returns true if it clears the cache which, practically speaking,
+it always does.</para>
 
 </chapter>
 
