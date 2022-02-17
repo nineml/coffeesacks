@@ -16,14 +16,12 @@ import net.sf.saxon.value.SequenceType;
  * <code>cs:clear-cache()</code> clears the cache.
  * </p>
  */
-public class ClearCacheFunction extends ExtensionFunctionDefinition {
+public class ClearCacheFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "clear-cache");
 
-    private final ParserCache cache;
-
     public ClearCacheFunction(ParserCache cache) {
-        this.cache = cache;
+        super(cache);
     }
 
     @Override

@@ -4,7 +4,6 @@ import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.StaticContext;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.lib.ExtensionFunctionCall;
-import net.sf.saxon.lib.ExtensionFunctionDefinition;
 import net.sf.saxon.ma.map.MapItem;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.Sequence;
@@ -13,15 +12,12 @@ import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.SequenceType;
 import org.nineml.coffeefilter.InvisibleXml;
-import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
-import org.nineml.coffeesacks.utils.ParseUtils;
 import org.xml.sax.InputSource;
 import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.net.URI;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -32,18 +28,12 @@ import java.util.HashMap;
  * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
  * <code>cs:grammar(href [, options])</code> loads a grammar.
  * </p>
- */public class GrammarFunction extends ExtensionFunctionDefinition {
-    private static final QName _type = new QName("", "type");
-    private static final QName _encoding = new QName("", "encoding");
-    private static final QName _cache = new QName("", "cache");
-
+ */public class GrammarFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "grammar");
 
-    private final ParserCache cache;
-
     public GrammarFunction(ParserCache cache) {
-        this.cache = cache;
+        super(cache);
     }
 
     @Override
@@ -104,7 +94,7 @@ import java.util.HashMap;
             if (sequences.length > 1) {
                 Item item = sequences[1].head();
                 if (item instanceof MapItem) {
-                    options = ParseUtils.parseMap((MapItem) item);
+                    options = parseMap((MapItem) item);
                 } else {
                     throw new XPathException("Second argument to cs:grammar must be a map");
                 }
