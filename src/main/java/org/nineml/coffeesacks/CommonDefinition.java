@@ -99,7 +99,9 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         }
 
         String format = options.getOrDefault(_format, "xml");
-        if (!"xml".equals(format) && !"json".equals(format) && !"json-data".equals(format) && !"json-text".equals(format)) {
+        if (!"xml".equals(format)
+                && !"json".equals(format) && !"json-data".equals(format)
+                && !"json-tree".equals(format) && !"json-text".equals(format)) {
             throw new XPathException("Unexpected format requested: " + format);
         }
 
@@ -136,7 +138,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
             }
 
             String json;
-            if ("json-text".equals(format)) {
+            if ("json-tree".equals(format) || "json-text".equals(format)) {
                 SimpleTreeBuilder builder = new SimpleTreeBuilder();
                 document.getTree(builder);
                 SimpleTree tree = builder.getTree();
