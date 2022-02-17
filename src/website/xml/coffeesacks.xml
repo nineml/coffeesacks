@@ -120,12 +120,15 @@ format.</para>
 <phrase role="refpurpose">The grammar location</phrase>
 </paramdef>
 <paramdef>
-<type>map(xs:QName, xs:string)</type>
+<type>map(*, xs:string)</type>
 <parameter>options</parameter>
 <phrase role="refpurpose">Grammar options</phrase>
 </paramdef>
 </funcprototype>
 </funcsynopsis>
+
+<para>The keys in the <option>$options</option> map may be simple strings or
+QNames.</para>
 
 <para>The following options are recognized:</para>
 
@@ -181,6 +184,110 @@ bytes of the file to identify the grammar which is usually sufficient.</para>
 </para>
 </listitem>
 </varlistentry>
+<varlistentry>
+<term><code>format</code></term>
+<listitem>
+<para>Identifies the format of the result:</para>
+  <variablelist>
+  <varlistentry>
+  <term><code>xml</code></term>
+  <listitem>
+  <para>Returns an XML node.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>json</code> or <code>json-data</code></term>
+  <listitem>
+  <para>Returns a “data” map. This method will fail if the result contains mixed content.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>json-text</code></term>
+  <listitem>
+  <para>Returns a “text” map. This map structure can represent any tree.
+  </para>
+  </listitem>
+  </varlistentry>
+  </variablelist>
+<para>It is an error to specify any other value.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</chapter>
+
+<chapter>
+<title>cs:parse-string</title>
+
+<para>Attempts to parse the input string
+the grammar provided. The result will be an XML document that is either the parsed
+result or a document that specifies that an error occurred.</para>
+
+<para>The grammar provided must be in XML format. This can be obtained with the
+<function>cs:grammar</function> function or, in the case of XML format grammars,
+through any convenient means.</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>item()</type>
+<function>cs:parse-string</function>
+</funcdef>
+<paramdef>
+<type>node</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The ixml grammar</phrase>
+</paramdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>input</parameter>
+<phrase role="refpurpose">The input</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>item()</type>
+<function>cs:parse-string</function>
+</funcdef>
+<paramdef>
+<type>node</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The ixml grammar</phrase>
+</paramdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>input</parameter>
+<phrase role="refpurpose">The input</phrase>
+</paramdef>
+<paramdef>
+<type>map(*, xs:string)</type>
+<parameter>options</parameter>
+<phrase role="refpurpose">Parsing options</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>The keys in the <option>$options</option> map may be simple strings or
+QNames.</para>
+
+<para>The following options are recognized:</para>
+
+<variablelist>
+<varlistentry>
+<term><code>cache</code></term>
+<listitem>
+<para>If unspecified or specified with the value “<code>true</code>”
+or “<code>yes</code>”, the grammar will be cached. If any other value
+is specified, the grammar will not be cached.
+</para>
+<para>Caching at this level saves the mapping between the XML representation
+of the grammar and the underlying Invisible XML parser object.</para>
+</listitem>
+</varlistentry>
 </variablelist>
 </chapter>
 
@@ -198,7 +305,7 @@ through any convenient means.</para>
 <funcsynopsis>
 <funcprototype>
 <funcdef>
-<type>node()</type>
+<type>item()</type>
 <function>cs:parse-uri</function>
 </funcdef>
 <paramdef>
@@ -217,7 +324,7 @@ through any convenient means.</para>
 <funcsynopsis>
 <funcprototype>
 <funcdef>
-<type>node()</type>
+<type>item()</type>
 <function>cs:parse-uri</function>
 </funcdef>
 <paramdef>
@@ -231,14 +338,17 @@ through any convenient means.</para>
 <phrase role="refpurpose">The document location</phrase>
 </paramdef>
 <paramdef>
-<type>map(xs:QName, xs:string)</type>
+<type>map(*, xs:string)</type>
 <parameter>options</parameter>
 <phrase role="refpurpose">Parsing options</phrase>
 </paramdef>
 </funcprototype>
 </funcsynopsis>
 
-<para>The following options are recognized.</para>
+<para>The keys in the <option>$options</option> map may be simple strings or
+QNames.</para>
+
+<para>The following options are recognized:</para>
 
 <variablelist>
 <varlistentry>
@@ -259,73 +369,34 @@ of the grammar and the underlying Invisible XML parser object.</para>
 </para>
 </listitem>
 </varlistentry>
-</variablelist>
-</chapter>
-
-<chapter>
-<title>cs:parse-string</title>
-
-<para>Attempts to parse the input string
-the grammar provided. The result will be an XML document that is either the parsed
-result or a document that specifies that an error occurred.</para>
-
-<para>The grammar provided must be in XML format. This can be obtained with the
-<function>cs:grammar</function> function or, in the case of XML format grammars,
-through any convenient means.</para>
-
-<funcsynopsis>
-<funcprototype>
-<funcdef>
-<type>node()</type>
-<function>cs:parse-string</function>
-</funcdef>
-<paramdef>
-<type>node</type>
-<parameter>grammar</parameter>
-<phrase role="refpurpose">The ixml grammar</phrase>
-</paramdef>
-<paramdef>
-<type>xs:string</type>
-<parameter>input</parameter>
-<phrase role="refpurpose">The input</phrase>
-</paramdef>
-</funcprototype>
-</funcsynopsis>
-
-<funcsynopsis>
-<funcprototype>
-<funcdef>
-<type>node()</type>
-<function>cs:parse-string</function>
-</funcdef>
-<paramdef>
-<type>node</type>
-<parameter>grammar</parameter>
-<phrase role="refpurpose">The ixml grammar</phrase>
-</paramdef>
-<paramdef>
-<type>xs:string</type>
-<parameter>input</parameter>
-<phrase role="refpurpose">The input</phrase>
-</paramdef>
-<paramdef>
-<type>map(xs:QName, xs:string)</type>
-<parameter>options</parameter>
-<phrase role="refpurpose">Parsing options</phrase>
-</paramdef>
-</funcprototype>
-</funcsynopsis>
-
-<variablelist>
 <varlistentry>
-<term><code>cache</code></term>
+<term><code>format</code></term>
 <listitem>
-<para>If unspecified or specified with the value “<code>true</code>”
-or “<code>yes</code>”, the grammar will be cached. If any other value
-is specified, the grammar will not be cached.
-</para>
-<para>Caching at this level saves the mapping between the XML representation
-of the grammar and the underlying Invisible XML parser object.</para>
+<para>Identifies the format of the result:</para>
+  <variablelist>
+  <varlistentry>
+  <term><code>xml</code></term>
+  <listitem>
+  <para>Returns an XML node.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>json</code> or <code>json-data</code></term>
+  <listitem>
+  <para>Returns a “data” map. This method will fail if the result contains mixed content.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>json-text</code></term>
+  <listitem>
+  <para>Returns a “text” map. This map structure can represent any tree.
+  </para>
+  </listitem>
+  </varlistentry>
+  </variablelist>
+<para>It is an error to specify any other value.</para>
 </listitem>
 </varlistentry>
 </variablelist>
