@@ -1,5 +1,6 @@
 package org.nineml.coffeesacks;
 
+import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.lib.ExtensionFunctionCall;
 import net.sf.saxon.ma.map.MapItem;
@@ -30,8 +31,8 @@ public class ParseStringFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "parse-string");
 
-    public ParseStringFunction(ParserCache cache) {
-        super(cache);
+    public ParseStringFunction(Configuration config, ParserCache cache) {
+        super(config, cache);
     }
 
     @Override

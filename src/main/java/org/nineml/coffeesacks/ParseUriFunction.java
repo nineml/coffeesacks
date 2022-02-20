@@ -1,5 +1,6 @@
 package org.nineml.coffeesacks;
 
+import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.StaticContext;
 import net.sf.saxon.expr.XPathContext;
@@ -39,8 +40,8 @@ public class ParseUriFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "parse-uri");
 
-    public ParseUriFunction(ParserCache cache) {
-        super(cache);
+    public ParseUriFunction(Configuration config, ParserCache cache) {
+        super(config, cache);
     }
 
     @Override

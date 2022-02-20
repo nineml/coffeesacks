@@ -1,5 +1,6 @@
 package org.nineml.coffeesacks;
 
+import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.lib.ExtensionFunctionDefinition;
 import net.sf.saxon.ma.map.KeyValuePair;
@@ -14,6 +15,7 @@ import net.sf.saxon.value.QNameValue;
 import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
+import org.nineml.coffeefilter.ParserOptions;
 import org.nineml.coffeefilter.trees.DataTree;
 import org.nineml.coffeefilter.trees.DataTreeBuilder;
 import org.nineml.coffeefilter.trees.SimpleTree;
@@ -24,7 +26,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -38,11 +39,15 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
     protected static final QName _encoding = new QName("", "encoding");
     protected static final QName _type = new QName("", "type");
     protected static final QName _format = new QName("", "format");
+    protected final ParserOptions parserOptions = new ParserOptions();
 
+    protected final Configuration config;
     protected final ParserCache cache;
 
-    public CommonDefinition(ParserCache cache) {
+    public CommonDefinition(Configuration config, ParserCache cache) {
         this.cache = cache;
+        this.config = config;
+        parserOptions.logger = new SacksLogger(config.getLogger());
     }
 
     protected HashMap<QName,String> parseMap(MapItem item) throws XPathException {
@@ -138,13 +143,15 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
             }
 
             String json;
+            ParserOptions newOptions = new ParserOptions(parserOptions);
+            newOptions.assertValidXmlNames = false;
             if ("json-tree".equals(format) || "json-text".equals(format)) {
-                SimpleTreeBuilder builder = new SimpleTreeBuilder();
+                SimpleTreeBuilder builder = new SimpleTreeBuilder(newOptions);
                 document.getTree(builder);
                 SimpleTree tree = builder.getTree();
                 json = tree.asJSON();
             } else {
-                DataTreeBuilder builder = new DataTreeBuilder();
+                DataTreeBuilder builder = new DataTreeBuilder(newOptions);
                 document.getTree(builder);
                 DataTree tree = builder.getTree();
                 json = tree.asJSON();
