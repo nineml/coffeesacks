@@ -90,7 +90,7 @@ import java.util.HashMap;
                 return cache.uriCache.get(grammarURI);
             }
 
-            HashMap<QName,String> options;
+            HashMap<String,String> options;
             if (sequences.length > 1) {
                 Item item = sequences[1].head();
                 if (item instanceof MapItem) {

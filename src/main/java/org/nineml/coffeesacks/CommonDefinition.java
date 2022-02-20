@@ -35,10 +35,10 @@ import java.util.HashMap;
  * Superclass for the CoffeeSacks functions containing some common definitions.
  */
 public abstract class CommonDefinition extends ExtensionFunctionDefinition {
-    protected static final QName _cache = new QName("", "cache");
-    protected static final QName _encoding = new QName("", "encoding");
-    protected static final QName _type = new QName("", "type");
-    protected static final QName _format = new QName("", "format");
+    protected static final String _cache = "cache";
+    protected static final String _encoding = "encoding";
+    protected static final String _type = "type";
+    protected static final String _format = "format";
     protected final ParserOptions parserOptions = new ParserOptions();
 
     protected final Configuration config;
@@ -50,18 +50,10 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         parserOptions.logger = new SacksLogger(config.getLogger());
     }
 
-    protected HashMap<QName,String> parseMap(MapItem item) throws XPathException {
-        HashMap<QName,String> options = new HashMap<>();
+    protected HashMap<String,String> parseMap(MapItem item) throws XPathException {
+        HashMap<String,String> options = new HashMap<>();
         for (KeyValuePair kv : item.keyValuePairs()) {
-            QName key = null;
-            if (kv.key.getItemType() == BuiltInAtomicType.QNAME) {
-                QNameValue qkey = (QNameValue) kv.key;
-                key = new QName(qkey.getPrefix(), qkey.getNamespaceURI(), qkey.getLocalName());
-            } else {
-                key = new QName("", "", kv.key.getStringValue());
-            }
-            String value = kv.value.getStringValue();
-            options.put(key, value);
+            options.put(kv.key.getStringValue(), kv.value.getStringValue());
         }
         return options;
     }
@@ -91,7 +83,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
     protected Sequence processInvisibleXml(XPathContext context, Sequence[] sequences, InputStream source) throws XPathException {
         NodeInfo grammar = (NodeInfo) sequences[0].head();
 
-        HashMap<QName,String> options;
+        HashMap<String,String> options;
         if (sequences.length > 2) {
             Item item = sequences[2].head();
             if (item instanceof MapItem) {
