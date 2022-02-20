@@ -32,6 +32,7 @@ import java.util.HashMap;
  */public class GrammarFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "grammar");
+    private URI baseURI = null;
 
     public GrammarFunction(Configuration config, ParserCache cache) {
         super(config, cache);
@@ -68,8 +69,6 @@ import java.util.HashMap;
     }
 
     private class GrammarCall extends ExtensionFunctionCall {
-        private URI baseURI = null;
-
         @Override
         public void supplyStaticContext(StaticContext context, int locationId, Expression[] arguments) throws XPathException {
             if (context.getStaticBaseURI() != null && !"".equals(context.getStaticBaseURI())) {

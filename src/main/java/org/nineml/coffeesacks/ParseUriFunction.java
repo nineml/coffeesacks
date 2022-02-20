@@ -39,6 +39,7 @@ import java.util.HashMap;
 public class ParseUriFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "parse-uri");
+    private URI baseURI = null;
 
     public ParseUriFunction(Configuration config, ParserCache cache) {
         super(config, cache);
@@ -79,8 +80,6 @@ public class ParseUriFunction extends CommonDefinition {
 
 
     private class ParseUriCall extends ExtensionFunctionCall {
-        private URI baseURI = null;
-
         @Override
         public void supplyStaticContext(StaticContext context, int locationId, Expression[] arguments) throws XPathException {
             if (context.getStaticBaseURI() != null && !"".equals(context.getStaticBaseURI())) {
