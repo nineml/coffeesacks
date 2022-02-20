@@ -1,5 +1,6 @@
 package org.nineml.coffeesacks;
 
+import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.StaticContext;
 import net.sf.saxon.expr.XPathContext;
@@ -38,9 +39,10 @@ import java.util.HashMap;
 public class ParseUriFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "parse-uri");
+    private URI baseURI = null;
 
-    public ParseUriFunction(ParserCache cache) {
-        super(cache);
+    public ParseUriFunction(Configuration config, ParserCache cache) {
+        super(config, cache);
     }
 
     @Override
@@ -78,8 +80,6 @@ public class ParseUriFunction extends CommonDefinition {
 
 
     private class ParseUriCall extends ExtensionFunctionCall {
-        private URI baseURI = null;
-
         @Override
         public void supplyStaticContext(StaticContext context, int locationId, Expression[] arguments) throws XPathException {
             if (context.getStaticBaseURI() != null && !"".equals(context.getStaticBaseURI())) {

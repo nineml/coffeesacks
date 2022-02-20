@@ -1,5 +1,6 @@
 package org.nineml.coffeesacks;
 
+import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.StaticContext;
 import net.sf.saxon.expr.XPathContext;
@@ -31,9 +32,10 @@ import java.util.HashMap;
  */public class GrammarFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "grammar");
+    private URI baseURI = null;
 
-    public GrammarFunction(ParserCache cache) {
-        super(cache);
+    public GrammarFunction(Configuration config, ParserCache cache) {
+        super(config, cache);
     }
 
     @Override
@@ -67,8 +69,6 @@ import java.util.HashMap;
     }
 
     private class GrammarCall extends ExtensionFunctionCall {
-        private URI baseURI = null;
-
         @Override
         public void supplyStaticContext(StaticContext context, int locationId, Expression[] arguments) throws XPathException {
             if (context.getStaticBaseURI() != null && !"".equals(context.getStaticBaseURI())) {
@@ -90,7 +90,7 @@ import java.util.HashMap;
                 return cache.uriCache.get(grammarURI);
             }
 
-            HashMap<QName,String> options;
+            HashMap<String,String> options;
             if (sequences.length > 1) {
                 Item item = sequences[1].head();
                 if (item instanceof MapItem) {

@@ -1,5 +1,6 @@
 package org.nineml.coffeesacks;
 
+import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.lib.ExtensionFunctionCall;
 import net.sf.saxon.lib.ExtensionFunctionDefinition;
@@ -20,8 +21,8 @@ public class ClearCacheFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "clear-cache");
 
-    public ClearCacheFunction(ParserCache cache) {
-        super(cache);
+    public ClearCacheFunction(Configuration config, ParserCache cache) {
+        super(config, cache);
     }
 
     @Override
