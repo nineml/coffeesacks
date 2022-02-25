@@ -18,8 +18,6 @@ import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.nineml.coffeefilter.trees.DataTree;
 import org.nineml.coffeefilter.trees.DataTreeBuilder;
-import org.xmlresolver.utils.URIUtils;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -83,7 +81,7 @@ public class ParseUriFunction extends CommonDefinition {
         @Override
         public void supplyStaticContext(StaticContext context, int locationId, Expression[] arguments) throws XPathException {
             if (context.getStaticBaseURI() != null && !"".equals(context.getStaticBaseURI())) {
-                baseURI = org.xmlresolver.utils.URIUtils.resolve(org.xmlresolver.utils.URIUtils.cwd(), context.getStaticBaseURI());
+                baseURI = URIUtils.resolve(URIUtils.cwd(), context.getStaticBaseURI());
             }
         }
         @Override

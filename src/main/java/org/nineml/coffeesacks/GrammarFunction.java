@@ -15,7 +15,6 @@ import net.sf.saxon.value.SequenceType;
 import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.xml.sax.InputSource;
-import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
