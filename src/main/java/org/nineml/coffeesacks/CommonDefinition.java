@@ -20,7 +20,7 @@ import org.nineml.coffeefilter.trees.DataTree;
 import org.nineml.coffeefilter.trees.DataTreeBuilder;
 import org.nineml.coffeefilter.trees.SimpleTree;
 import org.nineml.coffeefilter.trees.SimpleTreeBuilder;
-import org.xmlresolver.utils.URIUtils;
+import org.nineml.coffeegrinder.parser.HygieneReport;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -125,6 +125,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 }
             }
 
+            HygieneReport report = parser.getHygieneReport();
             InvisibleXmlDocument document = parser.parse(source, encoding);
 
             if ("xml".equals(format)) {
