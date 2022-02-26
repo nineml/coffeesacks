@@ -35,7 +35,7 @@ jobs:
             - ~/.gradle
           key: v1-dependencies-{{ checksum "build.gradle" }}
 
-      - run: ./gradlew dist website
+      - run: ./gradlew --stacktrace dist website
 
       - persist_to_workspace:
           root: build
