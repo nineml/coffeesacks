@@ -39,6 +39,9 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
     protected static final String _encoding = "encoding";
     protected static final String _type = "type";
     protected static final String _format = "format";
+
+    private static final QName _json = new QName("", "json");
+
     protected final ParserOptions parserOptions = new ParserOptions();
 
     protected final Configuration config;
@@ -77,7 +80,6 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         // Hack to make the input available as a stream
         ByteArrayInputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         return processInvisibleXml(context, sequences, stream);
-
     }
 
     protected Sequence processInvisibleXml(XPathContext context, Sequence[] sequences, InputStream source) throws XPathException {
@@ -108,22 +110,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
             String encoding = options.getOrDefault(_encoding, "UTF-8");
 
-            InvisibleXmlParser parser;
-            if (cache.nodeCache.containsKey(grammar)) {
-                parser = cache.nodeCache.get(grammar);
-            } else {
-                // This really isn't very nice
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                Serializer serializer = processor.newSerializer(baos);
-                serializer.serialize(grammar);
-                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                parser = InvisibleXml.getParser(bais, grammar.getBaseURI());
-
-                if ("true".equals(options.getOrDefault(_cache, "true"))
-                        || "yes".equals(options.getOrDefault(_cache, "yes"))) {
-                    cache.nodeCache.put(grammar, parser);
-                }
-            }
+            InvisibleXmlParser parser = getParserForGrammar(processor, options, grammar);
 
             HygieneReport report = parser.getHygieneReport();
             InvisibleXmlDocument document = parser.parse(source, encoding);
@@ -150,18 +137,42 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 json = tree.asJSON();
             }
 
-            // This also really isn't very nice
-            XPathCompiler compiler = processor.newXPathCompiler();
-            QName _json = new QName("", "json");
-            compiler.declareVariable(_json);
-            XPathExecutable exec = compiler.compile("parse-json($json)");
-            XPathSelector selector = exec.load();
-            selector.setVariable(_json, new XdmAtomicValue(json));
-            XdmSequenceIterator<XdmItem> iter = selector.iterator();
-            XdmItem item = iter.next();
-            return item.getUnderlyingValue();
+            return jsonToXDM(processor, json);
         } catch (Exception ex) {
             throw new XPathException(ex);
         }
+    }
+
+    protected Item jsonToXDM(Processor processor, String json) throws SaxonApiException {
+        // This also really isn't very nice
+        XPathCompiler compiler = processor.newXPathCompiler();
+        compiler.declareVariable(_json);
+        XPathExecutable exec = compiler.compile("parse-json($json)");
+        XPathSelector selector = exec.load();
+        selector.setVariable(_json, new XdmAtomicValue(json));
+        XdmSequenceIterator<XdmItem> iter = selector.iterator();
+        XdmItem item = iter.next();
+        return item.getUnderlyingValue();
+    }
+
+    protected InvisibleXmlParser getParserForGrammar(Processor processor, HashMap<String,String> options, NodeInfo grammar) throws IOException, SaxonApiException {
+        InvisibleXmlParser parser;
+        if (cache.nodeCache.containsKey(grammar)) {
+            parser = cache.nodeCache.get(grammar);
+        } else {
+            // This really isn't very nice
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Serializer serializer = processor.newSerializer(baos);
+            serializer.serialize(grammar);
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            parser = InvisibleXml.getParser(bais, grammar.getBaseURI());
+
+            if ("true".equals(options.getOrDefault(_cache, "true"))
+                    || "yes".equals(options.getOrDefault(_cache, "yes"))) {
+                cache.nodeCache.put(grammar, parser);
+            }
+        }
+
+        return parser;
     }
 }
