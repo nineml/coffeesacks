@@ -15,7 +15,6 @@ import net.sf.saxon.value.SequenceType;
 import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.xml.sax.InputSource;
-import org.xmlresolver.utils.URIUtils;
 
 import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
@@ -113,16 +112,16 @@ import java.util.HashMap;
                     URLConnection conn = grammarURI.toURL().openConnection();
                     if ("ixml".equals(grammarType)) {
                         String encoding = options.getOrDefault(_encoding, "UTF-8");
-                        parser = InvisibleXml.getParserFromIxml(conn.getInputStream(), encoding);
+                        parser = invisibleXml.getParserFromIxml(conn.getInputStream(), encoding);
                     } else if ("xml".equals(grammarType) || "vxml".equals(grammarType)) {
-                        parser = InvisibleXml.getParserFromVxml(conn.getInputStream(), grammarURI.toString());
+                        parser = invisibleXml.getParserFromVxml(conn.getInputStream(), grammarURI.toString());
                     } else if ("cxml".equals(grammarType) || "compiled".equals(grammarType)) {
-                        parser = InvisibleXml.getParserFromCxml(conn.getInputStream(), grammarURI.toString());
+                        parser = invisibleXml.getParserFromCxml(conn.getInputStream(), grammarURI.toString());
                     } else {
                         throw new IllegalArgumentException("Unexpected grammar type: " + grammarType);
                     }
                 } else {
-                    parser = InvisibleXml.getParser(grammarURI);
+                    parser = invisibleXml.getParser(grammarURI);
                 }
 
                 DocumentBuilder builder = processor.newDocumentBuilder();

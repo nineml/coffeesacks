@@ -120,15 +120,12 @@ format.</para>
 <phrase role="refpurpose">The grammar location</phrase>
 </paramdef>
 <paramdef>
-<type>map(*, xs:string)</type>
+<type>map(xs:string, xs:string)</type>
 <parameter>options</parameter>
 <phrase role="refpurpose">Grammar options</phrase>
 </paramdef>
 </funcprototype>
 </funcsynopsis>
-
-<para>The keys in the <option>$options</option> map may be simple strings or
-QNames.</para>
 
 <para>The following options are recognized:</para>
 
@@ -234,15 +231,12 @@ through any convenient means.</para>
 <phrase role="refpurpose">The input</phrase>
 </paramdef>
 <paramdef>
-<type>map(*, xs:string)</type>
+<type>map(xs:string, xs:string)</type>
 <parameter>options</parameter>
 <phrase role="refpurpose">Parsing options</phrase>
 </paramdef>
 </funcprototype>
 </funcsynopsis>
-
-<para>The keys in the <option>$options</option> map may be simple strings or
-QNames.</para>
 
 <para>The following options are recognized:</para>
 
@@ -338,15 +332,12 @@ through any convenient means.</para>
 <phrase role="refpurpose">The document location</phrase>
 </paramdef>
 <paramdef>
-<type>map(*, xs:string)</type>
+<type>map(xs:string, xs:string)</type>
 <parameter>options</parameter>
 <phrase role="refpurpose">Parsing options</phrase>
 </paramdef>
 </funcprototype>
 </funcsynopsis>
-
-<para>The keys in the <option>$options</option> map may be simple strings or
-QNames.</para>
 
 <para>The following options are recognized:</para>
 
@@ -400,6 +391,192 @@ of the grammar and the underlying Invisible XML parser object.</para>
 </listitem>
 </varlistentry>
 </variablelist>
+</chapter>
+
+<chapter>
+<title>cs:hygiene-report</title>
+
+<para>Get a hygiene report for a grammar. The hygiene report will
+contain information about unproductive rules and
+undefined, unused, or unproductive symbols.</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:hygiene-report</function>
+</funcdef>
+<paramdef>
+<type>node</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The ixml grammar</phrase>
+</paramdef>
+<paramdef>
+<type>map(xs:string, xs:string)</type>
+<parameter>options</parameter>
+<phrase role="refpurpose">Grammar options</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>The following options are recognized:</para>
+
+<variablelist>
+<varlistentry>
+<term><code>cache</code></term>
+<listitem>
+<para>If unspecified or specified with the value “<code>true</code>”
+or “<code>yes</code>”, the grammar will be cached. If any other value
+is specified, the grammar will not be cached.
+</para>
+<para>Caching at this level saves the mapping between the XML representation
+of the grammar and the underlying Invisible XML parser object.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>format</code></term>
+<listitem>
+<para>Identifies the format of the result:</para>
+  <variablelist>
+  <varlistentry>
+  <term><code>xml</code></term>
+  <listitem>
+  <para>Returns an XML node.
+  </para>
+  </listitem>
+  </varlistentry>
+  <varlistentry>
+  <term><code>json</code></term>
+  <listitem>
+  <para>Returns a map.
+  </para>
+  </listitem>
+  </varlistentry>
+  </variablelist>
+<para>It is an error to specify any other value.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+<para>It returns a report.</para>
+
+<para>Consider the following grammar:</para>
+
+<programlisting>S: A ; B .
+A: 'a', X .
+B: 'b', Y .
+X: 'x' .
+Z: 'z' .</programlisting>
+
+<para>It contains unused and undefined nonterminals.</para>
+
+<para>The XML report is in the
+<uri type="namespace">http://nineml.com/ns/coffeegrinder</uri> namespace.
+This is an example report for this grammar:</para>
+
+<programlisting language="xml"><![CDATA[<report xmlns="http://nineml.com/ns/coffeegrinder"
+        clean="false">
+   <undefined>
+      <symbol>Y</symbol>
+   </undefined>
+   <unreachable>
+      <symbol>Z</symbol>
+   </unreachable>
+   <unproductive>
+      <symbol>Y</symbol>
+      <rule>B ⇒ 'b', Y</rule>
+      <rule>S ⇒ B</rule>
+   </unproductive>
+</report>]]></programlisting>
+
+<para>In JSON, the report would be:</para>
+
+<programlisting language="json">{
+  "report": {
+    "unproductive": [
+      "B",
+      "B ⇒ 'b', Y",
+      "S ⇒ B"
+    ],
+    "unreachable": [
+      "Z"
+    ],
+    "clean": false,
+    "undefined": [
+      "Y"
+    ]
+  }
+}</programlisting>
+
+</chapter>
+
+<chapter>
+<title>cs:parser-options</title>
+
+<para>Set the parser options to use in subsequent parses.
+</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>xs:boolean</type>
+<function>cs:parser-options</function>
+</funcdef>
+<paramdef>
+<type>map(xs:string, xs:string)</type>
+<parameter>options</parameter>
+<phrase role="refpurpose">Parser options</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>The following options are recognized:</para>
+
+<variablelist>
+<varlistentry>
+<term><code>ignoreTrailingWhitespace</code>, boolean</term>
+<listitem>
+<para>If true, trailing whitespace on the document input string is
+ignored.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>suppressAmbiguousState</code>, boolean</term>
+<listitem>
+<para>If a parse is ambiguous, Invisible XML mandates that an
+<tag class="attribute">ixml:state</tag> attribute be added to the root
+element contining the value <code>ambiguous</code>. If this option
+is true, that state will be suppressed.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>suppressPrefixState</code>, boolean</term>
+<listitem>
+<para>If a parse consumes only a (proper) prefix of the input,
+Invisible XML mandates that an
+<tag class="attribute">ixml:state</tag> attribute be added to the root
+element contining the value <code>prefix</code>. If this option
+is true, that state will be suppressed.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>allowUndefinedSymbols</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+undefined symbols.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+<para>The function will log errors (unrecognized options or values).
+It will return false if any errors occur, otherwise it returns true.
+</para>
+
+<para>Changing parser options causes the cache to be cleared.</para>
 </chapter>
 
 <chapter>

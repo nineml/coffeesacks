@@ -20,7 +20,7 @@ import org.nineml.coffeefilter.trees.DataTree;
 import org.nineml.coffeefilter.trees.DataTreeBuilder;
 import org.nineml.coffeefilter.trees.SimpleTree;
 import org.nineml.coffeefilter.trees.SimpleTreeBuilder;
-import org.xmlresolver.utils.URIUtils;
+import org.nineml.coffeegrinder.parser.HygieneReport;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -35,19 +35,32 @@ import java.util.HashMap;
  * Superclass for the CoffeeSacks functions containing some common definitions.
  */
 public abstract class CommonDefinition extends ExtensionFunctionDefinition {
+    public static final String logcategory = "CoffeeSacks";
+
     protected static final String _cache = "cache";
     protected static final String _encoding = "encoding";
     protected static final String _type = "type";
     protected static final String _format = "format";
-    protected final ParserOptions parserOptions = new ParserOptions();
 
+    private static final QName _json = new QName("", "json");
+
+    protected static ParserOptions parserOptions = null;
+    protected static InvisibleXml invisibleXml = null;
     protected final Configuration config;
     protected final ParserCache cache;
 
     public CommonDefinition(Configuration config, ParserCache cache) {
+        if (parserOptions == null) {
+            parserOptions = new ParserOptions();
+            parserOptions.logger = new SacksLogger(config.getLogger());
+        }
+
+        if (invisibleXml == null) {
+            invisibleXml = new InvisibleXml(parserOptions);
+        }
+
         this.cache = cache;
         this.config = config;
-        parserOptions.logger = new SacksLogger(config.getLogger());
     }
 
     protected HashMap<String,String> parseMap(MapItem item) throws XPathException {
@@ -77,7 +90,6 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         // Hack to make the input available as a stream
         ByteArrayInputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
         return processInvisibleXml(context, sequences, stream);
-
     }
 
     protected Sequence processInvisibleXml(XPathContext context, Sequence[] sequences, InputStream source) throws XPathException {
@@ -108,23 +120,9 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
             String encoding = options.getOrDefault(_encoding, "UTF-8");
 
-            InvisibleXmlParser parser;
-            if (cache.nodeCache.containsKey(grammar)) {
-                parser = cache.nodeCache.get(grammar);
-            } else {
-                // This really isn't very nice
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                Serializer serializer = processor.newSerializer(baos);
-                serializer.serialize(grammar);
-                ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-                parser = InvisibleXml.getParser(bais, grammar.getBaseURI());
+            InvisibleXmlParser parser = getParserForGrammar(processor, options, grammar);
 
-                if ("true".equals(options.getOrDefault(_cache, "true"))
-                        || "yes".equals(options.getOrDefault(_cache, "yes"))) {
-                    cache.nodeCache.put(grammar, parser);
-                }
-            }
-
+            HygieneReport report = parser.getHygieneReport();
             InvisibleXmlDocument document = parser.parse(source, encoding);
 
             if ("xml".equals(format)) {
@@ -149,18 +147,42 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 json = tree.asJSON();
             }
 
-            // This also really isn't very nice
-            XPathCompiler compiler = processor.newXPathCompiler();
-            QName _json = new QName("", "json");
-            compiler.declareVariable(_json);
-            XPathExecutable exec = compiler.compile("parse-json($json)");
-            XPathSelector selector = exec.load();
-            selector.setVariable(_json, new XdmAtomicValue(json));
-            XdmSequenceIterator<XdmItem> iter = selector.iterator();
-            XdmItem item = iter.next();
-            return item.getUnderlyingValue();
+            return jsonToXDM(processor, json);
         } catch (Exception ex) {
             throw new XPathException(ex);
         }
+    }
+
+    protected Item jsonToXDM(Processor processor, String json) throws SaxonApiException {
+        // This also really isn't very nice
+        XPathCompiler compiler = processor.newXPathCompiler();
+        compiler.declareVariable(_json);
+        XPathExecutable exec = compiler.compile("parse-json($json)");
+        XPathSelector selector = exec.load();
+        selector.setVariable(_json, new XdmAtomicValue(json));
+        XdmSequenceIterator<XdmItem> iter = selector.iterator();
+        XdmItem item = iter.next();
+        return item.getUnderlyingValue();
+    }
+
+    protected InvisibleXmlParser getParserForGrammar(Processor processor, HashMap<String,String> options, NodeInfo grammar) throws IOException, SaxonApiException {
+        InvisibleXmlParser parser;
+        if (cache.nodeCache.containsKey(grammar)) {
+            parser = cache.nodeCache.get(grammar);
+        } else {
+            // This really isn't very nice
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Serializer serializer = processor.newSerializer(baos);
+            serializer.serialize(grammar);
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            parser = invisibleXml.getParser(bais, grammar.getBaseURI());
+
+            if ("true".equals(options.getOrDefault(_cache, "true"))
+                    || "yes".equals(options.getOrDefault(_cache, "yes"))) {
+                cache.nodeCache.put(grammar, parser);
+            }
+        }
+
+        return parser;
     }
 }
