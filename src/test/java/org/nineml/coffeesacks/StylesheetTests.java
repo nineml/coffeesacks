@@ -1,7 +1,6 @@
 package org.nineml.coffeesacks;
 
 import net.sf.saxon.s9api.*;
-import net.sf.saxon.tree.iter.AxisIterator;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
@@ -48,7 +47,6 @@ public class StylesheetTests extends TestConfiguration {
     @Test
     public void hygieneOutputTransformFail() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/hygienefail.xsl");
-        System.err.println("Loaded: " + stylesheet);
         XdmNode result = transform(stylesheet, stylesheet);
         XdmNode doc = null;
         for (XdmSequenceIterator<XdmNode> it = result.axisIterator(Axis.CHILD); it.hasNext(); ) {
@@ -95,10 +93,16 @@ public class StylesheetTests extends TestConfiguration {
     }
 
     @Test
+    public void badOption() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/badopt.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc>PASS</doc>", serialize(result));
+    }
+
+    @Test
     public void clearCache() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/clear-cache.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
         Assert.assertEquals("<doc>true</doc>", serialize(result));
     }
-
 }

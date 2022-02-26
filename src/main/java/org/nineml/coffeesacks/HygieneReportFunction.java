@@ -31,12 +31,12 @@ import java.util.Set;
  * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
  * <code>cs:grammar(href [, options])</code> loads a grammar.
  * </p>
- */public class HygieneReport extends CommonDefinition {
+ */public class HygieneReportFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "hygiene-report");
     private URI baseURI = null;
 
-    public HygieneReport(Configuration config, ParserCache cache) {
+    public HygieneReportFunction(Configuration config, ParserCache cache) {
         super(config, cache);
     }
 

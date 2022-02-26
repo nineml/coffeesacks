@@ -12,15 +12,11 @@
 
 <xsl:template match="/">
   <xsl:choose>
-    <xsl:when test="cs:parser-options(map{'allowUndefinedSymbols': 'true'})">
-      <xsl:variable name="grammar" select="cs:grammar('messy.ixml')"/>
-      <doc>
-        <xsl:sequence select="cs:parse-string($grammar, 'ax')"/>
-      </doc>
+    <xsl:when test="cs:parser-options(map{'Spoon!': 'Effervescent!'})">
+      <doc>FAIL</doc>
     </xsl:when>
     <xsl:otherwise>
-      <xsl:message terminate="yes"
-                   select="'Failed to set parser option: allowUndefinedSymbols'"/>
+      <doc>PASS</doc>
     </xsl:otherwise>
   </xsl:choose>
 </xsl:template>

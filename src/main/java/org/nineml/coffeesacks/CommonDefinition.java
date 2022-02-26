@@ -35,6 +35,8 @@ import java.util.HashMap;
  * Superclass for the CoffeeSacks functions containing some common definitions.
  */
 public abstract class CommonDefinition extends ExtensionFunctionDefinition {
+    public static final String logcategory = "CoffeeSacks";
+
     protected static final String _cache = "cache";
     protected static final String _encoding = "encoding";
     protected static final String _type = "type";
@@ -42,15 +44,23 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
     private static final QName _json = new QName("", "json");
 
-    protected final ParserOptions parserOptions = new ParserOptions();
-
+    protected static ParserOptions parserOptions = null;
+    protected static InvisibleXml invisibleXml = null;
     protected final Configuration config;
     protected final ParserCache cache;
 
     public CommonDefinition(Configuration config, ParserCache cache) {
+        if (parserOptions == null) {
+            parserOptions = new ParserOptions();
+            parserOptions.logger = new SacksLogger(config.getLogger());
+        }
+
+        if (invisibleXml == null) {
+            invisibleXml = new InvisibleXml(parserOptions);
+        }
+
         this.cache = cache;
         this.config = config;
-        parserOptions.logger = new SacksLogger(config.getLogger());
     }
 
     protected HashMap<String,String> parseMap(MapItem item) throws XPathException {
@@ -165,7 +175,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
             Serializer serializer = processor.newSerializer(baos);
             serializer.serialize(grammar);
             ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            parser = InvisibleXml.getParser(bais, grammar.getBaseURI());
+            parser = invisibleXml.getParser(bais, grammar.getBaseURI());
 
             if ("true".equals(options.getOrDefault(_cache, "true"))
                     || "yes".equals(options.getOrDefault(_cache, "yes"))) {

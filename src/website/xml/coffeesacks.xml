@@ -511,6 +511,75 @@ This is an example report for this grammar:</para>
 </chapter>
 
 <chapter>
+<title>cs:parser-options</title>
+
+<para>Set the parser options to use in subsequent parses.
+</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>xs:boolean</type>
+<function>cs:parser-options</function>
+</funcdef>
+<paramdef>
+<type>map(xs:string, xs:string)</type>
+<parameter>options</parameter>
+<phrase role="refpurpose">Parser options</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>The following options are recognized:</para>
+
+<variablelist>
+<varlistentry>
+<term><code>ignoreTrailingWhitespace</code>, boolean</term>
+<listitem>
+<para>If true, trailing whitespace on the document input string is
+ignored.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>suppressAmbiguousState</code>, boolean</term>
+<listitem>
+<para>If a parse is ambiguous, Invisible XML mandates that an
+<tag class="attribute">ixml:state</tag> attribute be added to the root
+element contining the value <code>ambiguous</code>. If this option
+is true, that state will be suppressed.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>suppressPrefixState</code>, boolean</term>
+<listitem>
+<para>If a parse consumes only a (proper) prefix of the input,
+Invisible XML mandates that an
+<tag class="attribute">ixml:state</tag> attribute be added to the root
+element contining the value <code>prefix</code>. If this option
+is true, that state will be suppressed.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>allowUndefinedSymbols</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+undefined symbols.
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+
+<para>The function will log errors (unrecognized options or values).
+It will return false if any errors occur, otherwise it returns true.
+</para>
+
+<para>Changing parser options causes the cache to be cleared.</para>
+</chapter>
+
+<chapter>
 <title>cs:clear-cache</title>
 
 <para>Clears the grammar cache.</para>
