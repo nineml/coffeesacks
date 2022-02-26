@@ -48,6 +48,7 @@ public class StylesheetTests extends TestConfiguration {
     @Test
     public void hygieneOutputTransformFail() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/hygienefail.xsl");
+        System.err.println("Loaded: " + stylesheet);
         XdmNode result = transform(stylesheet, stylesheet);
         XdmNode doc = null;
         for (XdmSequenceIterator<XdmNode> it = result.axisIterator(Axis.CHILD); it.hasNext(); ) {
