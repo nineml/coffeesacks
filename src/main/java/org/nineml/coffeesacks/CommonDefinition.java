@@ -133,7 +133,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
             }
 
             String json;
-            ParserOptions newOptions = new ParserOptions(parserOptions);
+            ParserOptions newOptions = new ParserOptions();
             newOptions.assertValidXmlNames = false;
             if ("json-tree".equals(format) || "json-text".equals(format)) {
                 SimpleTreeBuilder builder = new SimpleTreeBuilder(newOptions);
