@@ -89,33 +89,53 @@ public class ParserOptionsFunction extends CommonDefinition {
                     } else if ("false".equals(value) || "no".equals(value) || "0".equals(value)) {
                         bool = false;
                     } else {
-                        parserOptions.logger.warn(logcategory, "Ignoring unexpected value: %s=%s", key, value);
+                        parserOptions.getLogger().warn(logcategory, "Ignoring unexpected value: %s=%s", key, value);
                         ok = false;
                         continue;
                     }
 
                     switch (key) {
                         case "ignoreTrailingWhitespace":
-                            changed = changed || parserOptions.ignoreTrailingWhitespace != bool;
-                            parserOptions.ignoreTrailingWhitespace = bool;
+                            changed = changed || parserOptions.getIgnoreTrailingWhitespace() != bool;
+                            parserOptions.setIgnoreTrailingWhitespace(bool);
                             break;
                         case "suppressAmbiguousState":
-                            changed = changed || parserOptions.suppressIxmlAmbiguous != bool;
-                            parserOptions.suppressIxmlAmbiguous = bool;
+                            changed = changed || parserOptions.isSuppressedState("ambiguous") != bool;
+                            if (bool) {
+                                parserOptions.suppressState("ambiguous");
+                            } else {
+                                parserOptions.exposeState("ambiguous");
+                            }
                             break;
                         case "suppressPrefixState":
-                            changed = changed || parserOptions.suppressIxmlPrefix != bool;
-                            parserOptions.suppressIxmlPrefix = bool;
+                            changed = changed || parserOptions.isSuppressedState("prefix") != bool;
+                            if (bool) {
+                                parserOptions.suppressState("prefix");
+                            } else {
+                                parserOptions.exposeState("prefix");
+                            }
                             break;
                         case "allowUndefinedSymbols":
-                            changed = changed || parserOptions.allowUndefinedSymbols != bool;
-                            parserOptions.allowUndefinedSymbols = bool;
+                            changed = changed || parserOptions.getAllowUndefinedSymbols() != bool;
+                            parserOptions.setAllowUndefinedSymbols(bool);
+                            break;
+                        case "allowUnreachableSymbols":
+                            changed = changed || parserOptions.getAllowUnreachableSymbols() != bool;
+                            parserOptions.setAllowUnreachableSymbols(bool);
+                            break;
+                        case "allowUnproductiveSymbols":
+                            changed = changed || parserOptions.getAllowUnproductiveSymbols() != bool;
+                            parserOptions.setAllowUnproductiveSymbols(bool);
+                            break;
+                        case "allowMultipleDefinitions":
+                            changed = changed || parserOptions.getAllowMultipleDefinitions() != bool;
+                            parserOptions.setAllowMultipleDefinitions(bool);
                             break;
                         default:
-                            parserOptions.logger.warn(logcategory, "Ignoring unexpected option: %s", key);
+                            parserOptions.getLogger().warn(logcategory, "Ignoring unexpected option: %s", key);
                     }
                 } else {
-                    parserOptions.logger.warn(logcategory, "Ignoring unknown option: %s", key);
+                    parserOptions.getLogger().warn(logcategory, "Ignoring unknown option: %s", key);
                     ok = false;
                 }
             }
