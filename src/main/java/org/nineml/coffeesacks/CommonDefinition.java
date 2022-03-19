@@ -52,7 +52,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
     public CommonDefinition(Configuration config, ParserCache cache) {
         if (parserOptions == null) {
             parserOptions = new ParserOptions();
-            parserOptions.logger = new SacksLogger(config.getLogger());
+            parserOptions.setLogger(new SacksLogger(config.getLogger()));
         }
 
         if (invisibleXml == null) {
@@ -134,7 +134,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
             String json;
             ParserOptions newOptions = new ParserOptions();
-            newOptions.assertValidXmlNames = false;
+            newOptions.setAssertValidXmlNames(false);
             if ("json-tree".equals(format) || "json-text".equals(format)) {
                 SimpleTreeBuilder builder = new SimpleTreeBuilder(newOptions);
                 document.getTree(builder);

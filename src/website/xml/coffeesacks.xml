@@ -570,6 +570,30 @@ undefined symbols.
 </para>
 </listitem>
 </varlistentry>
+<varlistentry>
+<term><code>allowUnreachableSymbols</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+unreachable symbols.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>allowUnproductiveSymbols</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+unproductive symbols.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>allowMultipleDefinitions</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+multiple definitions for a given nonterminal.
+</para>
+</listitem>
+</varlistentry>
 </variablelist>
 
 <para>The function will log errors (unrecognized options or values).
