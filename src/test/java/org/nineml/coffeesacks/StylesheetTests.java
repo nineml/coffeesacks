@@ -4,10 +4,10 @@ import net.sf.saxon.s9api.*;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
-import org.nineml.coffeefilter.utils.CommonBuilder;
+import org.nineml.coffeefilter.InvisibleXml;
 
 public class StylesheetTests extends TestConfiguration {
-    public static final QName ixml_state = new QName(CommonBuilder.ixml_prefix, CommonBuilder.ixml_ns, "state");
+    public static final QName ixml_state = new QName(InvisibleXml.ixml_prefix, InvisibleXml.ixml_ns, "state");
 
     @Test
     public void stringInputXmlOutput() {
