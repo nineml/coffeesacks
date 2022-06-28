@@ -11,10 +11,7 @@ import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.BooleanValue;
 import net.sf.saxon.value.SequenceType;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * A Saxon extension function to change the parser options.
@@ -74,24 +71,39 @@ public class ParserOptionsFunction extends CommonDefinition {
                 throw new XPathException("Argument to CoffeeSacks parser-options function must be a map");
             }
 
-            Set<String> validOptions = new HashSet<>(Arrays.asList("ignoreTrailingWhitespace",
-                    "suppressAmbiguousState", "suppressPrefixState", "allowUndefinedSymbols"));
+            Set<String> booleanOptions = new HashSet<>(Arrays.asList("ignoreTrailingWhitespace",
+                    "allowUndefinedSymbols", "allowUnreachableSymbols", "allowUnproductiveSymobls",
+                    "allowMultipleDefinitions", "showMarks", "showBnfNonterminals",
+                    "suppressAmbiguousState", "suppressPrefixState"));
+
+            Set<String> stringOptions = new HashSet<>(Collections.singletonList("parser"));
 
             boolean changed = false;
             boolean ok = true;
             for (String key : options.keySet()) {
                 String value = options.get(key);
-                Boolean bool = null;
+                final boolean bool;
 
-                if (validOptions.contains(key)) {
-                    if ("true".equals(value) || "yes".equals(value) || "1".equals(value)) {
-                        bool = true;
-                    } else if ("false".equals(value) || "no".equals(value) || "0".equals(value)) {
-                        bool = false;
+                if (booleanOptions.contains(key) || stringOptions.contains(key)) {
+                    if (booleanOptions.contains(key)) {
+                        if ("true".equals(value) || "yes".equals(value) || "1".equals(value)) {
+                            bool = true;
+                        } else if ("false".equals(value) || "no".equals(value) || "0".equals(value)) {
+                            bool = false;
+                        } else {
+                            parserOptions.getLogger().warn(logcategory, "Ignoring unexpected value: %s=%s", key, value);
+                            ok = false;
+                            continue;
+                        }
                     } else {
-                        parserOptions.getLogger().warn(logcategory, "Ignoring unexpected value: %s=%s", key, value);
-                        ok = false;
-                        continue;
+                        bool = false; // irrelevant, but make the IDE happy
+                        if ("parser".equals(key)) {
+                            if (!"GLL".equals(value) && !"Earley".equals(value)) {
+                                parserOptions.getLogger().warn(logcategory, "Ignoring unexpected value: %s=%s", key, value);
+                                ok = false;
+                                continue;
+                            }
+                        }
                     }
 
                     switch (key) {
@@ -130,6 +142,18 @@ public class ParserOptionsFunction extends CommonDefinition {
                         case "allowMultipleDefinitions":
                             changed = changed || parserOptions.getAllowMultipleDefinitions() != bool;
                             parserOptions.setAllowMultipleDefinitions(bool);
+                            break;
+                        case "showMarks":
+                            changed = changed || parserOptions.getShowMarks() != bool;
+                            parserOptions.setShowMarks(bool);
+                            break;
+                        case "showBnfNonterminals":
+                            changed = changed || parserOptions.getShowBnfNonterminals() != bool;
+                            parserOptions.setShowBnfNonterminals(bool);
+                            break;
+                        case "parser":
+                            changed = changed || !value.equals(parserOptions.getParserType());
+                            parserOptions.setParserType(value);
                             break;
                         default:
                             parserOptions.getLogger().warn(logcategory, "Ignoring unexpected option: %s", key);

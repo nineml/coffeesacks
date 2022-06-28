@@ -594,6 +594,38 @@ multiple definitions for a given nonterminal.
 </para>
 </listitem>
 </varlistentry>
+<varlistentry>
+<term><code>allowMultipleDefinitions</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+multiple definitions for a given nonterminal.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>showMarks</code>, boolean</term>
+<listitem>
+<para>If true, the parser will return all of the nonterminals in your
+grammar as elements, irrespective of their marks. The actual mark will
+be returned in an <code>ixml:mark</code> attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>showBnfNonterminals</code>, boolean</term>
+<listitem>
+<para>If true, the parser will return all of the otherwise hidden nonterminals
+used in the parse.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>parser</code>, string</term>
+<listitem>
+<para>Selects the parser type, “<code>Earley</code>” for the Earley parser
+and “<code>GLL</code>” for the GLL parser. The Earley parser is the default.
+</para>
+</listitem>
+</varlistentry>
 </variablelist>
 
 <para>The function will log errors (unrecognized options or values).
