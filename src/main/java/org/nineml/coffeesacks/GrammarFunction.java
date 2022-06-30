@@ -54,7 +54,7 @@ import java.util.HashMap;
 
     @Override
     public SequenceType[] getArgumentTypes() {
-        return new SequenceType[]{SequenceType.SINGLE_STRING, SequenceType.OPTIONAL_NODE};
+        return new SequenceType[]{SequenceType.SINGLE_STRING, SequenceType.OPTIONAL_ITEM};
     }
 
     @Override
