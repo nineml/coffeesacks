@@ -66,7 +66,7 @@ grammar and return the result:</para>
                 version="3.0">
 
 <xsl:template name="xsl:initial-template">
-  <xsl:variable name="grammar" select="cs:grammar('date.ixml')"/>
+  <xsl:variable name="grammar" select="cs:grammar-uri('date.ixml')"/>
   <doc>
     <xsl:sequence select="cs:parse-string($grammar, '15 February 2022')"/>
   </doc>
@@ -87,7 +87,66 @@ grammar and return the result:</para>
 </chapter>
 
 <chapter>
-<title>cs:grammar</title>
+<title>cs:grammar-string</title>
+
+<para>Before it can be used, a grammar must be loaded. You can load Invisible XML
+grammars in either the text or XML syntax. You can also load grammars in the
+<link xlink:href="https://coffeegrinder.nineml.org/">CoffeeGrinder</link> compiled
+format.</para>
+
+<para>This function takes a string in the Invisible XML grammar format and parses
+it into a grammar. You can load the XML grammar formats directly as XML. You can load
+grammars from URIs with <function>cs:grammar-uri</function>.</para>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:grammar-string</function>
+</funcdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The Invisible XML grammar in text format</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>node()</type>
+<function>cs:grammar-string</function>
+</funcdef>
+<paramdef>
+<type>xs:string</type>
+<parameter>grammar</parameter>
+<phrase role="refpurpose">The Invisible XML grammar in text format</phrase>
+</paramdef>
+<paramdef>
+<type>map(xs:string, xs:string)</type>
+<parameter>options</parameter>
+<phrase role="refpurpose">Grammar options</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<para>The following options are recognized:</para>
+
+<variablelist>
+<varlistentry>
+<term><code>type</code></term>
+<listitem>
+<para>Identifies the type of grammar to parse. The only value
+accepted is <code>ixml</code>, the text format.</para>
+<para>It is an error to specify any other value.</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</chapter>
+
+<chapter>
+<title>cs:grammar-uri</title>
 
 <para>Before it can be used, a grammar must be loaded. You can load Invisible XML
 grammars in either the text or XML syntax. You can also load grammars in the
@@ -98,7 +157,7 @@ format.</para>
 <funcprototype>
 <funcdef>
 <type>node()</type>
-<function>cs:grammar</function>
+<function>cs:grammar-uri</function>
 </funcdef>
 <paramdef>
 <type>xs:string</type>
@@ -112,7 +171,7 @@ format.</para>
 <funcprototype>
 <funcdef>
 <type>node()</type>
-<function>cs:grammar</function>
+<function>cs:grammar-uri</function>
 </funcdef>
 <paramdef>
 <type>xs:string</type>
@@ -192,7 +251,7 @@ the grammar provided. The result will be an XML document that is either the pars
 result or a document that specifies that an error occurred.</para>
 
 <para>The grammar provided must be in XML format. This can be obtained with the
-<function>cs:grammar</function> function or, in the case of XML format grammars,
+<function>cs:grammar-uri</function> function or, in the case of XML format grammars,
 through any convenient means.</para>
 
 <funcsynopsis>
@@ -293,7 +352,7 @@ the grammar provided. The result will be an XML document that is either the pars
 result or a document that specifies that an error occurred.</para>
 
 <para>The grammar provided must be in XML format. This can be obtained with the
-<function>cs:grammar</function> function or, in the case of XML format grammars,
+<function>cs:grammar-uri</function> function or, in the case of XML format grammars,
 through any convenient means.</para>
 
 <funcsynopsis>
