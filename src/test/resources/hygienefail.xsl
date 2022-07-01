@@ -13,7 +13,7 @@
 <xsl:template match="/">
   <xsl:choose>
     <xsl:when test="cs:parser-options(map{'allowUndefinedSymbols': 'true'})">
-      <xsl:variable name="grammar" select="cs:grammar('messy.ixml')"/>
+      <xsl:variable name="grammar" select="cs:grammar-uri('messy.ixml')"/>
       <doc>
         <xsl:sequence select="cs:parse-string($grammar, 'az')"/>
       </doc>

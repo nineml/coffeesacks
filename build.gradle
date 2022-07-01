@@ -319,7 +319,7 @@ publishing {
       pom {
         name = sacksTitle
         packaging = 'jar'
-        description = 'An ixml parser'
+        description = 'Saxon extension functions for Invisible XML'
         url = 'https://github.com/nineml/coffeesacks'
 
         scm {

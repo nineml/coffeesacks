@@ -9,17 +9,17 @@ import net.sf.saxon.ma.map.MapItem;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.Sequence;
 import net.sf.saxon.om.StructuredQName;
-import net.sf.saxon.s9api.*;
+import net.sf.saxon.s9api.DocumentBuilder;
+import net.sf.saxon.s9api.Processor;
+import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.SequenceType;
-import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.xml.sax.InputSource;
 
 import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
@@ -28,12 +28,12 @@ import java.util.HashMap;
  * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
  * <code>cs:grammar(href [, options])</code> loads a grammar.
  * </p>
- */public class GrammarFunction extends CommonDefinition {
+ */public class GrammarStringFunction extends CommonDefinition {
     private static final StructuredQName qName =
-            new StructuredQName("", "http://nineml.com/ns/coffeesacks", "grammar");
+            new StructuredQName("", "http://nineml.com/ns/coffeesacks", "grammar-string");
     private URI baseURI = null;
 
-    public GrammarFunction(Configuration config, ParserCache cache) {
+    public GrammarStringFunction(Configuration config, ParserCache cache) {
         super(config, cache);
     }
 
@@ -77,17 +77,7 @@ import java.util.HashMap;
 
         @Override
         public Sequence call(XPathContext xPathContext, Sequence[] sequences) throws XPathException {
-            String grammarHref = sequences[0].head().getStringValue();
-            URI grammarURI;
-            if (baseURI != null) {
-                grammarURI = baseURI.resolve(grammarHref);
-            } else {
-                grammarURI = URIUtils.resolve(URIUtils.cwd(), grammarHref);
-            }
-
-            if (cache.uriCache.containsKey(grammarURI)) {
-                return cache.uriCache.get(grammarURI);
-            }
+            String grammarString = sequences[0].head().getStringValue();
 
             HashMap<String,String> options;
             if (sequences.length > 1) {
@@ -109,30 +99,19 @@ import java.util.HashMap;
                 InvisibleXmlParser parser = null;
                 if (options.containsKey(_type)) {
                     String grammarType = options.get(_type);
-                    URLConnection conn = grammarURI.toURL().openConnection();
                     if ("ixml".equals(grammarType)) {
-                        String encoding = options.getOrDefault(_encoding, "UTF-8");
-                        parser = invisibleXml.getParserFromIxml(conn.getInputStream(), encoding);
-                    } else if ("xml".equals(grammarType) || "vxml".equals(grammarType)) {
-                        parser = invisibleXml.getParserFromVxml(conn.getInputStream(), grammarURI.toString());
-                    } else if ("cxml".equals(grammarType) || "compiled".equals(grammarType)) {
-                        parser = invisibleXml.getParserFromCxml(conn.getInputStream(), grammarURI.toString());
+                        parser = invisibleXml.getParserFromIxml(grammarString);
                     } else {
-                        throw new IllegalArgumentException("Unexpected grammar type: " + grammarType);
+                        throw new IllegalArgumentException("Only ixml grammars can be parsed from strings: " + grammarType);
                     }
                 } else {
-                    parser = invisibleXml.getParser(grammarURI);
+                    parser = invisibleXml.getParserFromIxml(grammarString);
                 }
 
                 DocumentBuilder builder = processor.newDocumentBuilder();
                 ByteArrayInputStream bais = new ByteArrayInputStream(parser.getCompiledParser().getBytes(StandardCharsets.UTF_8));
                 SAXSource source = new SAXSource(new InputSource(bais));
                 grammar = builder.build(source);
-
-                if ("true".equals(options.getOrDefault(_cache, "true"))
-                    || "yes".equals(options.getOrDefault(_cache, "yes"))) {
-                    cache.uriCache.put(grammarURI, grammar.getUnderlyingNode());
-                }
 
                 return grammar.getUnderlyingNode();
             } catch (Exception ex) {
