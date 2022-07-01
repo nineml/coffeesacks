@@ -10,10 +10,10 @@
 
 <xsl:mode on-no-match="shallow-copy"/>
 
-<xsl:template match="/">
-  <xsl:variable name="grammar" select="cs:grammar-uri('date.ixml')"/>
+<xsl:template name="xsl:initial-template">
+  <xsl:variable name="grammar" select="doc('date.xml')"/>
   <doc>
-    <xsl:sequence select="cs:parse-string($grammar, '15 February 2022')"/>
+    <xsl:sequence select="cs:parse-uri($grammar, 'date.inp')"/>
   </doc>
 </xsl:template>
 

@@ -12,7 +12,7 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:variable name="grammar" select="cs:grammar('date.ixml')"/>
+  <xsl:variable name="grammar" select="cs:grammar-uri('date.ixml')"/>
   <xsl:variable name="map" 
                 select="cs:parse-string($grammar, '15 February 2022',
                                         map { 'format': 'json' })"/>

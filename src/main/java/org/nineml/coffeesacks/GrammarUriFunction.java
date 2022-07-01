@@ -12,7 +12,6 @@ import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.SequenceType;
-import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.xml.sax.InputSource;
 
@@ -28,12 +27,12 @@ import java.util.HashMap;
  * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
  * <code>cs:grammar(href [, options])</code> loads a grammar.
  * </p>
- */public class GrammarFunction extends CommonDefinition {
+ */public class GrammarUriFunction extends CommonDefinition {
     private static final StructuredQName qName =
-            new StructuredQName("", "http://nineml.com/ns/coffeesacks", "grammar");
+            new StructuredQName("", "http://nineml.com/ns/coffeesacks", "grammar-uri");
     private URI baseURI = null;
 
-    public GrammarFunction(Configuration config, ParserCache cache) {
+    public GrammarUriFunction(Configuration config, ParserCache cache) {
         super(config, cache);
     }
 

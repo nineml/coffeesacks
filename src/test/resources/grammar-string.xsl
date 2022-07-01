@@ -10,8 +10,20 @@
 
 <xsl:mode on-no-match="shallow-copy"/>
 
-<xsl:template match="/">
-  <xsl:variable name="grammar" select="cs:grammar-uri('date.ixml')"/>
+<xsl:template name="xsl:initial-template">
+  <xsl:variable name="ixml" as="xs:string">
+<xsl:text>
+date: s?, day, -s, month, (-s, year)? .
+-s: -" "+ .
+day: digit, digit? .
+-digit: "0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9".
+month: "January"; "February"; "March"; "April";
+       "May"; "June"; "July"; "August";
+       "September"; "October"; "November"; "December".
+year: (digit, digit)?, digit, digit .
+</xsl:text>
+  </xsl:variable>
+  <xsl:variable name="grammar" select="cs:grammar-string($ixml)"/>
   <doc>
     <xsl:sequence select="cs:parse-uri($grammar, 'date.inp')"/>
   </doc>
