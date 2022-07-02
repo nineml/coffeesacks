@@ -3,15 +3,14 @@ package org.nineml.coffeesacks;
 import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.lib.ExtensionFunctionDefinition;
-import net.sf.saxon.ma.map.KeyValuePair;
 import net.sf.saxon.ma.map.MapItem;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.om.Sequence;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
-import net.sf.saxon.type.BuiltInAtomicType;
-import net.sf.saxon.value.QNameValue;
+import net.sf.saxon.tree.iter.AtomicIterator;
+import net.sf.saxon.value.AtomicValue;
 import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
@@ -26,6 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -65,9 +66,24 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
     protected HashMap<String,String> parseMap(MapItem item) throws XPathException {
         HashMap<String,String> options = new HashMap<>();
-        for (KeyValuePair kv : item.keyValuePairs()) {
-            options.put(kv.key.getStringValue(), kv.value.getStringValue());
+
+        // The implementation of the keyValuePairs() method is incompatible between Saxon 10 and Saxon 11.
+        // In order to avoid having to publish two versions of this class, we use reflection to
+        // work it out at runtime. (Insert programmer barfing on his shoes emoji here.)
+        try {
+            Method keys = MapItem.class.getMethod("keys");
+            Method get = MapItem.class.getMethod("get", AtomicValue.class);
+            AtomicIterator aiter = (AtomicIterator) keys.invoke(item);
+            AtomicValue next = aiter.next();
+            while (next != null) {
+                AtomicValue value = (AtomicValue) get.invoke(item, next);
+                options.put(next.getStringValue(), value.getStringValue());
+                next = aiter.next();
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+            throw new IllegalArgumentException("Failed to resolve MapItem with reflection");
         }
+
         return options;
     }
 
