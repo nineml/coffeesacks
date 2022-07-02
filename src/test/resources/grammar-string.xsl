@@ -23,7 +23,8 @@ month: "January"; "February"; "March"; "April";
 year: (digit, digit)?, digit, digit .
 </xsl:text>
   </xsl:variable>
-  <xsl:variable name="grammar" select="cs:grammar-string($ixml)"/>
+  <xsl:variable name="grammar" select="cs:grammar-string($ixml,
+                                       map { 'type': 'ixml' })"/>
   <doc>
     <xsl:sequence select="cs:parse-uri($grammar, 'date.inp')"/>
   </doc>
