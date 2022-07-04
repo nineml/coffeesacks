@@ -86,13 +86,36 @@ grammar and return the result:</para>
 
 </chapter>
 
-<chapter>
-<title>cs:grammar-string</title>
+<chapter xml:id="loading-grammars">
+<title>Loading grammars</title>
 
 <para>Before it can be used, a grammar must be loaded. You can load Invisible XML
 grammars in either the text or XML syntax. You can also load grammars in the
 <link xlink:href="https://coffeegrinder.nineml.org/">CoffeeGrinder</link> compiled
 format.</para>
+
+<para>The grammar loading functions return an XML document. If the
+function succeeds, this will be a compiled representation of the
+grammar. It is not very useful except as the grammar input to one of
+<link linkend="parsing-inputs">the parsing functions</link>.
+(If you’re interested in a useful XML
+representation of an Invisible XML grammar, parse the grammar with the
+Invisible XML grammar.)</para>
+
+<para>If the grammar could not be loaded, what will be returned will
+be a <tag>cs:error</tag> document (where the <code>cs</code> prefix is
+bound to
+<uri type="xmlnamespace">https://ninenl.org/ns/coffeesacks/error</uri>).
+This document will have a <tag class="attribute">code</tag> attribute
+that attempts to identify the error. The contents of the error
+document will further describe the error.</para>
+
+<para>The only code returned by the grammar functions is
+<code>badgrammar</code>, indicating that the attempt to parse the grammar
+failed.</para>
+
+<section>
+<title>cs:grammar-string</title>
 
 <para>This function takes a string in the Invisible XML grammar format and parses
 it into a grammar. You can load the XML grammar formats directly as XML. You can load
@@ -143,15 +166,12 @@ accepted is <code>ixml</code>, the text format.</para>
 </listitem>
 </varlistentry>
 </variablelist>
-</chapter>
+</section>
 
-<chapter>
+<section>
 <title>cs:grammar-uri</title>
 
-<para>Before it can be used, a grammar must be loaded. You can load Invisible XML
-grammars in either the text or XML syntax. You can also load grammars in the
-<link xlink:href="https://coffeegrinder.nineml.org/">CoffeeGrinder</link> compiled
-format.</para>
+<para>This function loads a grammar from a URI.</para>
 
 <funcsynopsis>
 <funcprototype>
@@ -241,18 +261,51 @@ bytes of the file to identify the grammar which is usually sufficient.</para>
 </listitem>
 </varlistentry>
 </variablelist>
+</section>
 </chapter>
 
-<chapter>
+<chapter xml:id="parsing-inputs">
+<title>Parsing inputs</title>
+
+<para>The parsing functions attempts to parse the input string with
+the grammar provided. The result will be an XML document (or a map)
+that is either the parsed result or a document that specifies that an
+error occurred.</para>
+
+<para>The grammar provided must be in XML format. This can be obtained
+with the <link linkend="loading-grammars">grammar loading
+functions</link> or, in the case of XML format grammars, through any
+convenient means.</para>
+
+<para>The parsing functions return an XML document (or a map). If the
+parse is successful, this will be a representation of the result of
+parsing the input with the grammar.</para>
+
+<para>If the parse is unsuccessful, a top-level <tag>ixml:state</tag>
+attribute (or property) with the value “<code>fail</code>” indicates
+that the parse did not succeed. The rest of the document will contain
+information that is designed to help you identify the error.</para>
+
+<para>If the grammar could not be used, what will be returned will
+be a <tag>cs:error</tag> document (where the <code>cs</code> prefix is
+bound to
+<uri type="xmlnamespace">https://ninenl.org/ns/coffeesacks/error</uri>).
+This document will have a <tag class="attribute">code</tag> attribute
+that attempts to identify the error. The contents of the error
+document will further describe the error.</para>
+
+<para>(If a JSON result was requested, the error document will have a
+<code>cs:error</code> property with the value of the code.)</para>
+
+<para>The possible codes are <code>notgrammar</code>, if the input
+grammar was not a recognized XML representation of an Invisible XML
+grammar, or <code>notxml</code>, if the input grammar was not
+XML.</para>
+
+<section>
 <title>cs:parse-string</title>
 
-<para>Attempts to parse the input string
-the grammar provided. The result will be an XML document that is either the parsed
-result or a document that specifies that an error occurred.</para>
-
-<para>The grammar provided must be in XML format. This can be obtained with the
-<function>cs:grammar-uri</function> function or, in the case of XML format grammars,
-through any convenient means.</para>
+<para>Parses an input string against a grammar.</para>
 
 <funcsynopsis>
 <funcprototype>
@@ -342,18 +395,13 @@ of the grammar and the underlying Invisible XML parser object.</para>
 </listitem>
 </varlistentry>
 </variablelist>
-</chapter>
+</section>
 
-<chapter>
+<section>
 <title>cs:parse-uri</title>
 
 <para>Loads the document at the specified URI and attempts to parse it with
-the grammar provided. The result will be an XML document that is either the parsed
-result or a document that specifies that an error occurred.</para>
-
-<para>The grammar provided must be in XML format. This can be obtained with the
-<function>cs:grammar-uri</function> function or, in the case of XML format grammars,
-through any convenient means.</para>
+the grammar provided.</para>
 
 <funcsynopsis>
 <funcprototype>
@@ -450,6 +498,7 @@ of the grammar and the underlying Invisible XML parser object.</para>
 </listitem>
 </varlistentry>
 </variablelist>
+</section>
 </chapter>
 
 <chapter>
