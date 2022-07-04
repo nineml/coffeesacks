@@ -20,7 +20,10 @@ import org.nineml.coffeefilter.trees.DataTreeBuilder;
 import org.nineml.coffeefilter.trees.SimpleTree;
 import org.nineml.coffeefilter.trees.SimpleTreeBuilder;
 import org.nineml.coffeegrinder.parser.HygieneReport;
+import org.xml.sax.InputSource;
 
+import javax.xml.transform.Source;
+import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,6 +40,9 @@ import java.util.HashMap;
  */
 public abstract class CommonDefinition extends ExtensionFunctionDefinition {
     public static final String logcategory = "CoffeeSacks";
+    public static final QName cxml = new QName("", "http://nineml.org/coffeegrinder/ns/grammar/compiled", "grammar");
+    public static final QName ixml_state = new QName("ixml", "http://invisiblexml.org/NS", "state");
+    public static final String cs_namespace = "https://ninenl.org/ns/coffeesacks/error";
 
     protected static final String _cache = "cache";
     protected static final String _encoding = "encoding";
@@ -130,6 +136,30 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
             throw new XPathException("Unexpected format requested: " + format);
         }
 
+        XdmNode node = new XdmNode(grammar);
+        if (node.getNodeKind() == XdmNodeKind.DOCUMENT) {
+            XdmSequenceIterator<XdmNode> iter = node.axisIterator(Axis.CHILD);
+            while (iter.hasNext()) {
+                XdmNode child = iter.next();
+                if (child.getNodeKind() == XdmNodeKind.ELEMENT) {
+                    node = child;
+                    break;
+                }
+            }
+        }
+
+        if (node.getNodeKind() == XdmNodeKind.ELEMENT) {
+            String state = node.getAttributeValue(ixml_state);
+            if (state != null && state.contains("fail")) {
+                return earlyFailBadGrammar(node, format);
+            }
+            if (!cxml.equals(node.getNodeName())) {
+                return earlyFailNotGrammar(node, format);
+            }
+        } else {
+            return earlyFailNotXml(node, format);
+        }
+
         try {
             // Can this ever fail?
             Processor processor = (Processor) context.getConfiguration().getProcessor();
@@ -138,7 +168,6 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
             InvisibleXmlParser parser = getParserForGrammar(processor, options, grammar);
 
-            HygieneReport report = parser.getHygieneReport();
             InvisibleXmlDocument document = parser.parse(source, encoding);
 
             if ("xml".equals(format)) {
@@ -167,6 +196,72 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         } catch (Exception ex) {
             throw new XPathException(ex);
         }
+    }
+
+    private Sequence earlyFailBadGrammar(XdmNode node, String format) {
+        if ("json".equals(format)) {
+            XdmMap map = new XdmMap();
+            map = map.put(new XdmAtomicValue("cs:error"), new XdmAtomicValue("badgrammar"));
+            map = map.put(new XdmAtomicValue("ixml:state"), new XdmAtomicValue("fail"));
+            map = map.put(new XdmAtomicValue("grammar"), node);
+            return map.getUnderlyingValue();
+        }
+
+        XmlXdmWriter writer = new XmlXdmWriter(node.getProcessor());
+        writer.startDocument();
+        writer.declareNamespace("ixml", ixml_state.getNamespaceURI());
+        writer.declareNamespace("cs", cs_namespace);
+        writer.startElement("cs:error");
+        writer.addAttribute("ixml:state", "fail");
+        writer.addAttribute("code", "badgrammar");
+        writer.addNode(node);
+        writer.endElement();
+        writer.endDocument();
+        return writer.getDocument().getUnderlyingNode();
+    }
+
+    private Sequence earlyFailNotGrammar(XdmNode node, String format) {
+        if ("json".equals(format)) {
+            XdmMap map = new XdmMap();
+            map = map.put(new XdmAtomicValue("cs:error"), new XdmAtomicValue("notgrammar"));
+            map = map.put(new XdmAtomicValue("ixml:state"), new XdmAtomicValue("fail"));
+            map = map.put(new XdmAtomicValue("grammar"), node);
+            return map.getUnderlyingValue();
+        }
+
+        XmlXdmWriter writer = new XmlXdmWriter(node.getProcessor());
+        writer.startDocument();
+        writer.declareNamespace("ixml", ixml_state.getNamespaceURI());
+        writer.declareNamespace("cs", cs_namespace);
+        writer.startElement("cs:error");
+        writer.addAttribute("ixml:state", "fail");
+        writer.addAttribute("code", "notgrammar");
+        writer.addNode(node);
+        writer.endElement();
+        writer.endDocument();
+        return writer.getDocument().getUnderlyingNode();
+    }
+
+    private Sequence earlyFailNotXml(XdmNode node, String format) {
+        if ("json".equals(format)) {
+            XdmMap map = new XdmMap();
+            map = map.put(new XdmAtomicValue("cs:error"), new XdmAtomicValue("notxml"));
+            map = map.put(new XdmAtomicValue("ixml:state"), new XdmAtomicValue("fail"));
+            map = map.put(new XdmAtomicValue("grammar"), node);
+            return map.getUnderlyingValue();
+        }
+
+        XmlXdmWriter writer = new XmlXdmWriter(node.getProcessor());
+        writer.startDocument();
+        writer.declareNamespace("ixml", ixml_state.getNamespaceURI());
+        writer.declareNamespace("cs", cs_namespace);
+        writer.startElement("cs:error");
+        writer.addAttribute("ixml:state", "fail");
+        writer.addAttribute("code", "notxml");
+        writer.addNode(node);
+        writer.endElement();
+        writer.endDocument();
+        return writer.getDocument().getUnderlyingNode();
     }
 
     protected Item jsonToXDM(Processor processor, String json) throws SaxonApiException {
