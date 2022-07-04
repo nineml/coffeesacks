@@ -70,6 +70,12 @@ html {
     display: none;
 }
 
+main > div > header > h1, 
+main > div > header > h2, 
+main > div > header > h3 {
+    padding-top: 3rem;
+}
+
 .book header .versions p {
     text-align: center;
 }
