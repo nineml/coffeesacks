@@ -14,6 +14,7 @@ import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.value.SequenceType;
+import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.xml.sax.InputSource;
 
@@ -109,9 +110,17 @@ import java.util.HashMap;
                 }
 
                 DocumentBuilder builder = processor.newDocumentBuilder();
-                ByteArrayInputStream bais = new ByteArrayInputStream(parser.getCompiledParser().getBytes(StandardCharsets.UTF_8));
-                SAXSource source = new SAXSource(new InputSource(bais));
-                grammar = builder.build(source);
+
+                if (parser.constructed()) {
+                    ByteArrayInputStream bais = new ByteArrayInputStream(parser.getCompiledParser().getBytes(StandardCharsets.UTF_8));
+                    SAXSource source = new SAXSource(new InputSource(bais));
+                    grammar = builder.build(source);
+                } else {
+                    InvisibleXmlDocument failed = parser.getFailedParse();
+                    ByteArrayInputStream bais = new ByteArrayInputStream(failed.getTree().getBytes(StandardCharsets.UTF_8));
+                    SAXSource source = new SAXSource(new InputSource(bais));
+                    return builder.build(source).getUnderlyingNode();
+                }
 
                 return grammar.getUnderlyingNode();
             } catch (Exception ex) {
