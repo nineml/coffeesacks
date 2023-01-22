@@ -11,14 +11,11 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:choose>
-    <xsl:when test="cs:parser-options(map{'Spoon!': 'Effervescent!'})">
-      <doc>FAIL</doc>
-    </xsl:when>
-    <xsl:otherwise>
-      <doc>PASS</doc>
-    </xsl:otherwise>
-  </xsl:choose>
+  <xsl:variable name="grammar" select="unparsed-text('date.ixml')"/>
+  <xsl:variable name="parser" select="cs:make-parser($grammar)"/>
+  <doc>
+    <xsl:sequence select="$parser('15 February 2022')"/>
+  </doc>
 </xsl:template>
 
 </xsl:stylesheet>

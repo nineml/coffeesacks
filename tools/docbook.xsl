@@ -16,11 +16,7 @@
 <xsl:import href="../website/docbook.xsl"/>
 <xsl:import href="xpath.xsl"/>
 
-<xsl:param name="css-links"
-           select="'css/docbook.css css/docbook-screen.css css/nineml.css css/coffeesacks.css'"/>
-
 <!-- ============================================================ -->
-
 <xsl:template match="db:productname" mode="m:titlepage"
               expand-text="yes">
   <div class="versions">
@@ -38,6 +34,10 @@
 <xsl:template match="*" mode="m:html-head-links">
   <xsl:next-match/>
   <link rel="shortcut icon" href="icon/CoffeeSacks.png"/>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="css/nineml.css"/>
+  <link rel="stylesheet" href="css/coffeesacks.css"/>
 </xsl:template>
 
 <xsl:template match="db:funcsynopsis" mode="m:docbook">

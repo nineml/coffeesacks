@@ -11,9 +11,9 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:variable name="grammar" select="cs:grammar-uri('date.ixml')"/>
+  <xsl:variable name="parser" select="cs:load-grammar('date.ixml')"/>
   <doc>
-    <xsl:sequence select="cs:parse-uri($grammar, 'date.inp')"/>
+    <xsl:sequence select="$parser(unparsed-text('date.inp'))"/>
   </doc>
 </xsl:template>
 

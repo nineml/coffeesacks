@@ -11,20 +11,14 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:choose>
-    <xsl:when test="cs:parser-options(map{'allowUndefinedSymbols': 'true'})">
-      <xsl:variable name="grammar" select="cs:grammar-uri('messy.ixml')"/>
-      <map>
-        <xsl:sequence
-            select="serialize(cs:hygiene-report($grammar, map{'format':'json'}),
-                              map { 'method': 'json' })"/>
-      </map>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:message terminate="yes"
-                   select="'Failed to set parser option: allowUndefinedSymbols'"/>
-    </xsl:otherwise>
-  </xsl:choose>
+  <map>
+    <xsl:variable name="report"
+                  select="cs:hygiene-report(xs:anyURI('messy.ixml'),
+                              map{'allowUndefinedSymbols': 'true',
+                                  'format': 'json'})"/>
+    <xsl:sequence
+        select="serialize($report, map { 'method': 'json' })"/>
+  </map>
 </xsl:template>
 
 </xsl:stylesheet>

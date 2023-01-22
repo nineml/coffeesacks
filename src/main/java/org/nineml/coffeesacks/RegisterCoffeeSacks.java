@@ -11,13 +11,8 @@ import javax.xml.transform.TransformerException;
 public class RegisterCoffeeSacks implements Initializer {
     @Override
     public void initialize(Configuration config) throws TransformerException {
-        ParserCache cache = new ParserCache();
-        config.registerExtensionFunction(new GrammarStringFunction(config, cache));
-        config.registerExtensionFunction(new GrammarUriFunction(config, cache));
-        config.registerExtensionFunction(new ParseStringFunction(config, cache));
-        config.registerExtensionFunction(new ParseUriFunction(config, cache));
-        config.registerExtensionFunction(new ClearCacheFunction(config, cache));
-        config.registerExtensionFunction(new HygieneReportFunction(config, cache));
-        config.registerExtensionFunction(new ParserOptionsFunction(config, cache));
+        config.registerExtensionFunction(new LoadGrammar(config));
+        config.registerExtensionFunction(new MakeParser(config));
+        config.registerExtensionFunction(new HygieneReportFunction(config));
     }
 }

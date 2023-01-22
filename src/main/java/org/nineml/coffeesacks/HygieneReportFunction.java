@@ -1,6 +1,8 @@
 package org.nineml.coffeesacks;
 
 import net.sf.saxon.Configuration;
+import net.sf.saxon.expr.Expression;
+import net.sf.saxon.expr.StaticContext;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.lib.ExtensionFunctionCall;
 import net.sf.saxon.ma.map.MapItem;
@@ -9,12 +11,17 @@ import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.om.Sequence;
 import net.sf.saxon.om.StructuredQName;
 import net.sf.saxon.s9api.DocumentBuilder;
+import net.sf.saxon.s9api.Location;
 import net.sf.saxon.s9api.Processor;
 import net.sf.saxon.s9api.SaxonApiException;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.trans.XPathException;
+import net.sf.saxon.value.AnyURIValue;
 import net.sf.saxon.value.SequenceType;
+import net.sf.saxon.value.StringValue;
+import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
+import org.nineml.coffeegrinder.parser.HygieneReport;
 import org.nineml.coffeegrinder.parser.NonterminalSymbol;
 import org.nineml.coffeegrinder.parser.Rule;
 import org.xml.sax.InputSource;
@@ -34,10 +41,9 @@ import java.util.Set;
  */public class HygieneReportFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "hygiene-report");
-    private URI baseURI = null;
 
-    public HygieneReportFunction(Configuration config, ParserCache cache) {
-        super(config, cache);
+    public HygieneReportFunction(Configuration config) {
+        super(config);
     }
 
     @Override
@@ -72,38 +78,69 @@ import java.util.Set;
 
     private class HygieneCall extends ExtensionFunctionCall {
         @Override
-        public Sequence call(XPathContext xPathContext, Sequence[] sequences) throws XPathException {
-            NodeInfo grammar = (NodeInfo) sequences[0].head();
+        public void supplyStaticContext(StaticContext context, int locationId, Expression[] arguments) throws XPathException {
+            sourceLoc = context.getContainingLocation();
+            if (context.getStaticBaseURI() != null && !"".equals(context.getStaticBaseURI())) {
+                baseURI = URIUtils.resolve(URIUtils.cwd(), context.getStaticBaseURI());
+            }
+        }
 
-            HashMap<String,String> options;
+        @Override
+        public Sequence call(XPathContext context, Sequence[] sequences) throws XPathException {
+            HashMap<String, String> options;
             if (sequences.length > 1) {
                 Item item = sequences[1].head();
                 if (item instanceof MapItem) {
                     options = parseMap((MapItem) item);
+                    checkOptions(options);
                 } else {
-                    throw new XPathException("Second argument CoffeeSacks hygiene-report function must be a map");
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_BAD_OPTIONS, "Options must be a map", sourceLoc);
                 }
             } else {
                 options = new HashMap<>();
             }
 
-            String format = options.getOrDefault(_format, "xml");
-            if (!"xml".equals(format) && !"json".equals(format) ) {
-                throw new XPathException("Unexpected format requested: " + format);
+            Sequence input = sequences[0].head();
+            final InvisibleXmlParser parser;
+            if (input instanceof AnyURIValue) {
+                String grammarHref = ((AnyURIValue) input).getStringValue();
+                URI grammarURI;
+                if (baseURI != null) {
+                    grammarURI = baseURI.resolve(grammarHref);
+                } else {
+                    grammarURI = URIUtils.resolve(URIUtils.cwd(), grammarHref);
+                }
+                parser = parserFromURI(context, grammarURI, options);
+            } else if (input instanceof StringValue) {
+                parser = parserFromString(context, ((StringValue) input).getStringValue(), options);
+            } else {
+                throw new CoffeeSacksException(CoffeeSacksException.ERR_BAD_GRAMMAR, "Grammar must be a string or a URI", sourceLoc);
             }
 
             try {
-                // Can this ever fail?
-                Processor processor = (Processor) xPathContext.getConfiguration().getProcessor();
-                InvisibleXmlParser parser = getParserForGrammar(processor, options, grammar);
-                org.nineml.coffeegrinder.parser.HygieneReport report = parser.getHygieneReport();
+                if (parser.constructed()) {
+                    // Can this ever fail?
+                    Processor processor = (Processor) context.getConfiguration().getProcessor();
 
-                if ("xml".equals(format)) {
-                    return xmlReport(processor, report);
+                    HygieneReport report = parser.getHygieneReport();
+
+                    String format = options.getOrDefault(_format, "xml");
+                    if ("xml".equals(format)) {
+                        return xmlReport(processor, report);
+                    } else {
+                        return jsonReport(processor, report);
+                    }
                 } else {
-                    return jsonReport(processor, report);
+                    InvisibleXmlDocument failed = parser.getFailedParse();
+                    ByteArrayInputStream bais = new ByteArrayInputStream(failed.getTree().getBytes(StandardCharsets.UTF_8));
+                    SAXSource source = new SAXSource(new InputSource(bais));
+                    Processor processor = (Processor) context.getConfiguration().getProcessor();
+                    DocumentBuilder builder = processor.newDocumentBuilder();
+                    XdmNode errdoc = builder.build(source);
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_GRAMMAR, "Failed to parse grammar",
+                            sourceLoc, errdoc.getUnderlyingNode());
                 }
-            } catch (Exception ex) {
+            } catch (SaxonApiException ex) {
                 throw new XPathException(ex);
             }
         }

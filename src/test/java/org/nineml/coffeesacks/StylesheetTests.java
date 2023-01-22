@@ -24,6 +24,20 @@ public class StylesheetTests extends TestConfiguration {
     }
 
     @Test
+    public void xmlInputXmlOutput() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/date-xml-xml.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc><date><day>15</day><month>February</month><year>2022</year></date></doc>", serialize(result));
+    }
+
+    @Test
+    public void textInputXmlOutput() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/date-xml-text.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc><date><day>15</day><month>February</month><year>2022</year></date></doc>", serialize(result));
+    }
+
+    @Test
     public void stringInputMapOutput() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/date-map-string.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
@@ -48,23 +62,7 @@ public class StylesheetTests extends TestConfiguration {
     public void hygieneOutputTransformFail() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/hygienefail.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
-        XdmNode doc = null;
-        for (XdmSequenceIterator<XdmNode> it = result.axisIterator(Axis.CHILD); it.hasNext(); ) {
-            XdmNode node = it.next();
-            if (node.getNodeKind() == XdmNodeKind.ELEMENT) {
-                doc = node;
-                break;
-            }
-        }
-
-        for (XdmSequenceIterator<XdmNode> it = doc.axisIterator(Axis.CHILD); it.hasNext(); ) {
-            XdmNode node = it.next();
-            if (node.getNodeKind() == XdmNodeKind.ELEMENT) {
-                String value = node.getAttributeValue(ixml_state);
-                Assert.assertEquals("failed", value);
-                break;
-            }
-        }
+        Assert.assertEquals("<doc>FAILED</doc>", serialize(result));
     }
 
     @Test
@@ -90,19 +88,5 @@ public class StylesheetTests extends TestConfiguration {
         Assertions.assertTrue(report.contains("[\"Y\"]"));
         Assertions.assertTrue(report.contains("[\"Z\"]"));
         Assertions.assertTrue(report.contains("\"unproductive\":"));
-    }
-
-    @Test
-    public void badOption() {
-        XdmNode stylesheet = loadStylesheet("src/test/resources/badopt.xsl");
-        XdmNode result = transform(stylesheet, stylesheet);
-        Assert.assertEquals("<doc>PASS</doc>", serialize(result));
-    }
-
-    @Test
-    public void clearCache() {
-        XdmNode stylesheet = loadStylesheet("src/test/resources/clear-cache.xsl");
-        XdmNode result = transform(stylesheet, stylesheet);
-        Assert.assertEquals("<doc>true</doc>", serialize(result));
     }
 }

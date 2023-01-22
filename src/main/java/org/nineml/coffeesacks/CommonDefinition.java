@@ -1,7 +1,9 @@
 package org.nineml.coffeesacks;
 
 import net.sf.saxon.Configuration;
+import net.sf.saxon.expr.Callable;
 import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.functions.CallableFunction;
 import net.sf.saxon.lib.ExtensionFunctionDefinition;
 import net.sf.saxon.ma.map.MapItem;
 import net.sf.saxon.om.Item;
@@ -10,7 +12,12 @@ import net.sf.saxon.om.Sequence;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.AtomicIterator;
+import net.sf.saxon.type.FunctionItemType;
+import net.sf.saxon.type.SpecificFunctionType;
+import net.sf.saxon.value.AnyURIValue;
 import net.sf.saxon.value.AtomicValue;
+import net.sf.saxon.value.SequenceType;
+import net.sf.saxon.value.StringValue;
 import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
@@ -31,9 +38,15 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Superclass for the CoffeeSacks functions containing some common definitions.
@@ -44,30 +57,132 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
     public static final QName ixml_state = new QName("ixml", "http://invisiblexml.org/NS", "state");
     public static final String cs_namespace = "https://ninenl.org/ns/coffeesacks/error";
 
-    protected static final String _cache = "cache";
     protected static final String _encoding = "encoding";
     protected static final String _type = "type";
     protected static final String _format = "format";
 
     private static final QName _json = new QName("", "json");
 
-    protected static ParserOptions parserOptions = null;
-    protected static InvisibleXml invisibleXml = null;
+    public static int FOLLOW_REDIRECT_LIMIT = 100;
+    protected final ParserOptions parserOptions;
+    protected InvisibleXml invisibleXml = null;
     protected final Configuration config;
-    protected final ParserCache cache;
+    protected URI baseURI = null;
+    protected Location sourceLoc = null;
 
-    public CommonDefinition(Configuration config, ParserCache cache) {
-        if (parserOptions == null) {
-            parserOptions = new ParserOptions();
-            parserOptions.setLogger(new SacksLogger(config.getLogger()));
-        }
-
-        if (invisibleXml == null) {
-            invisibleXml = new InvisibleXml(parserOptions);
-        }
-
-        this.cache = cache;
+    public CommonDefinition(Configuration config) {
+        parserOptions = new ParserOptions();
+        parserOptions.setLogger(new SacksLogger(config.getLogger()));
         this.config = config;
+    }
+
+    protected InvisibleXmlParser parserFromURI(XPathContext context, URI grammarURI, Map<String,String> options) throws XPathException {
+        try {
+            invisibleXml = new InvisibleXml(parserOptions);
+            final InvisibleXmlParser parser;
+
+            if (options.containsKey(_type)) {
+                String grammarType = options.get(_type);
+                URLConnection conn = grammarURI.toURL().openConnection();
+                String location = conn.getHeaderField("location");
+                if (location != null) {
+                    HashSet<String> seenLocations = new HashSet<>();
+                    while (location != null) {
+                        if (seenLocations.contains(location)) {
+                            throw new CoffeeSacksException(CoffeeSacksException.ERR_HTTP_INF_LOOP, "Redirect loop", sourceLoc, new AnyURIValue(grammarURI.toString()));
+                        }
+                        if (seenLocations.size() > FOLLOW_REDIRECT_LIMIT) {
+                            throw new CoffeeSacksException(CoffeeSacksException.ERR_HTTP_LOOP, "Redirect limit exceeded", sourceLoc, new AnyURIValue(grammarURI.toString()));
+                        }
+                        seenLocations.add(location);
+                        URL loc = new URL(location);
+                        conn = loc.openConnection();
+                        location = conn.getHeaderField("location");
+                    }
+                }
+                if ("ixml".equals(grammarType)) {
+                    String encoding = options.getOrDefault(_encoding, "UTF-8");
+                    parser = invisibleXml.getParserFromIxml(conn.getInputStream(), encoding);
+                } else if ("xml".equals(grammarType) || "vxml".equals(grammarType)) {
+                    parser = invisibleXml.getParserFromVxml(conn.getInputStream(), grammarURI.toString());
+                } else if ("cxml".equals(grammarType) || "compiled".equals(grammarType)) {
+                    parser = invisibleXml.getParserFromCxml(conn.getInputStream(), grammarURI.toString());
+                } else {
+                    throw new IllegalArgumentException("Unexpected grammar type: " + grammarType);
+                }
+            } else {
+                parser = invisibleXml.getParser(grammarURI);
+            }
+
+            return parser;
+        } catch (Exception ex) {
+            throw new XPathException(ex);
+        }
+    }
+
+    protected InvisibleXmlParser parserFromString(XPathContext context, String grammarString, Map<String,String> options) throws XPathException {
+        invisibleXml = new InvisibleXml(parserOptions);
+        final InvisibleXmlParser parser;
+
+        if (options.containsKey(_type)) {
+            String grammarType = options.get(_type);
+            if ("ixml".equals(grammarType)) {
+                parser = invisibleXml.getParserFromIxml(grammarString);
+            } else {
+                throw new IllegalArgumentException("Only ixml grammars can be parsed from strings: " + grammarType);
+            }
+        } else {
+            parser = invisibleXml.getParserFromIxml(grammarString);
+        }
+
+        return parser;
+    }
+
+    protected InvisibleXmlParser parserFromXml(XPathContext context, NodeInfo grammar, Map<String,String> options) throws XPathException {
+        invisibleXml = new InvisibleXml(parserOptions);
+        final InvisibleXmlParser parser;
+
+        try {
+            // This can be made more efficient if/when CoffeeFilter accepts a node directly...
+            Processor processor = (Processor) context.getConfiguration().getProcessor();
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            Serializer serializer = processor.newSerializer(baos);
+            serializer.serialize(grammar.asActiveSource());
+            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+            parser = invisibleXml.getParserFromVxml(bais, grammar.getBaseURI());
+        } catch (IOException | SaxonApiException ex) {
+            throw new XPathException(ex);
+        }
+
+        return parser;
+    }
+
+    protected Sequence functionFromParser(XPathContext context, InvisibleXmlParser parser, Map<String,String> options) throws XPathException {
+        if (parser.constructed()) {
+            net.sf.saxon.value.SequenceType[] argTypes = new net.sf.saxon.value.SequenceType[]{net.sf.saxon.value.SequenceType.SINGLE_STRING};
+
+            final FunctionItemType ftype;
+            if ("xml".equals(options.getOrDefault(_format, "xml"))) {
+                ftype = new SpecificFunctionType(argTypes, SequenceType.SINGLE_NODE);
+            } else {
+                ftype = new SpecificFunctionType(argTypes, SequenceType.SINGLE_ITEM);
+            }
+
+            return new CallableFunction(1, new InvisibleXmlParserFunction(parser, options), ftype);
+        } else {
+            try {
+                InvisibleXmlDocument failed = parser.getFailedParse();
+                ByteArrayInputStream bais = new ByteArrayInputStream(failed.getTree().getBytes(StandardCharsets.UTF_8));
+                SAXSource source = new SAXSource(new InputSource(bais));
+                Processor processor = (Processor) context.getConfiguration().getProcessor();
+                DocumentBuilder builder = processor.newDocumentBuilder();
+                XdmNode errdoc = builder.build(source);
+                throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_GRAMMAR, "Failed to parse grammar",
+                        sourceLoc, errdoc.getUnderlyingNode());
+            } catch (SaxonApiException ex) {
+                throw new XPathException(ex);
+            }
+        }
     }
 
     protected HashMap<String,String> parseMap(MapItem item) throws XPathException {
@@ -93,175 +208,97 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         return options;
     }
 
-    protected Sequence processInvisibleXmlURI(URI baseURI, XPathContext context, Sequence[] sequences) throws XPathException, IOException {
-        String inputHref = sequences[1].head().getStringValue();
+    protected void checkOptions(Map<String,String> options) throws XPathException {
+        Set<String> booleanOptions = new HashSet<>(Arrays.asList("ignoreTrailingWhitespace",
+                "allowUndefinedSymbols", "allowUnreachableSymbols", "allowUnproductiveSymobls",
+                "allowMultipleDefinitions", "showMarks", "showBnfNonterminals",
+                "suppressAmbiguousState", "suppressPrefixState"));
 
-        URI inputURI;
-        if (baseURI != null) {
-            inputURI = baseURI.resolve(inputHref);
-        } else {
-            inputURI = URIUtils.resolve(URIUtils.cwd(), inputHref);
-        }
+        //Set<String> stringOptions = new HashSet<>(Collections.singletonList("parser"));
 
-        URLConnection conn = inputURI.toURL().openConnection();
-        return processInvisibleXml(context, sequences, conn.getInputStream());
-    }
+        for (String key : options.keySet()) {
+            String value = options.get(key);
+            final boolean bool;
 
-    protected Sequence processInvisibleXmlString(XPathContext context, Sequence[] sequences) throws XPathException {
-        String input = sequences[1].head().getStringValue();
-        // Hack to make the input available as a stream
-        ByteArrayInputStream stream = new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8));
-        return processInvisibleXml(context, sequences, stream);
-    }
-
-    protected Sequence processInvisibleXml(XPathContext context, Sequence[] sequences, InputStream source) throws XPathException {
-        NodeInfo grammar = (NodeInfo) sequences[0].head();
-
-        HashMap<String,String> options;
-        if (sequences.length > 2) {
-            Item item = sequences[2].head();
-            if (item instanceof MapItem) {
-                options = parseMap((MapItem) item);
+            if (booleanOptions.contains(key)) {
+                if ("true".equals(value) || "yes".equals(value) || "1".equals(value)) {
+                    bool = true;
+                } else if ("false".equals(value) || "no".equals(value) || "0".equals(value)) {
+                    bool = false;
+                } else {
+                    parserOptions.getLogger().warn(logcategory, "Ignoring invalid option value: %s=%s", key, value);
+                    continue;
+                }
             } else {
-                throw new XPathException("Third argument CoffeeSacks parse function must be a map");
-            }
-        } else {
-            options = new HashMap<>();
-        }
-
-        String format = options.getOrDefault(_format, "xml");
-        if (!"xml".equals(format)
-                && !"json".equals(format) && !"json-data".equals(format)
-                && !"json-tree".equals(format) && !"json-text".equals(format)) {
-            throw new XPathException("Unexpected format requested: " + format);
-        }
-
-        XdmNode node = new XdmNode(grammar);
-        if (node.getNodeKind() == XdmNodeKind.DOCUMENT) {
-            XdmSequenceIterator<XdmNode> iter = node.axisIterator(Axis.CHILD);
-            while (iter.hasNext()) {
-                XdmNode child = iter.next();
-                if (child.getNodeKind() == XdmNodeKind.ELEMENT) {
-                    node = child;
-                    break;
+                bool = false; // irrelevant but makes the compiler happy
+                if ("parser".equals(key)) {
+                    if (!"GLL".equals(value) && !"Earley".equals(value)) {
+                        parserOptions.getLogger().warn(logcategory, "Ignoring invalid option value: %s=%s", key, value);
+                        continue;
+                    }
                 }
             }
-        }
 
-        if (node.getNodeKind() == XdmNodeKind.ELEMENT) {
-            String state = node.getAttributeValue(ixml_state);
-            if (state != null && state.contains("fail")) {
-                return earlyFailBadGrammar(node, format);
+            switch (key) {
+                case "ignoreTrailingWhitespace":
+                    parserOptions.setIgnoreTrailingWhitespace(bool);
+                    break;
+                case "suppressAmbiguousState":
+                    if (bool) {
+                        parserOptions.suppressState("ambiguous");
+                    } else {
+                        parserOptions.exposeState("ambiguous");
+                    }
+                    break;
+                case "suppressPrefixState":
+                    if (bool) {
+                        parserOptions.suppressState("prefix");
+                    } else {
+                        parserOptions.exposeState("prefix");
+                    }
+                    break;
+                case "allowUndefinedSymbols":
+                    parserOptions.setAllowUndefinedSymbols(bool);
+                    break;
+                case "allowUnreachableSymbols":
+                    parserOptions.setAllowUnreachableSymbols(bool);
+                    break;
+                case "allowUnproductiveSymbols":
+                    parserOptions.setAllowUnproductiveSymbols(bool);
+                    break;
+                case "allowMultipleDefinitions":
+                    parserOptions.setAllowMultipleDefinitions(bool);
+                    break;
+                case "showMarks":
+                    parserOptions.setShowMarks(bool);
+                    break;
+                case "showBnfNonterminals":
+                    parserOptions.setShowBnfNonterminals(bool);
+                    break;
+                case "parser":
+                    parserOptions.setParserType(value);
+                    break;
+
+                case "format":
+                    Set<String> formats = new HashSet<>(Arrays.asList("xml", "json", "json-data", "json-tree", "json-text"));
+                    if (!formats.contains(value)) {
+                        throw new CoffeeSacksException(CoffeeSacksException.ERR_BAD_OUTPUT_FORMAT, "Invalid output format",
+                                sourceLoc, new StringValue(value));
+                    }
+                    break;
+                case "type":
+                    Set<String> types = new HashSet<>(Arrays.asList("ixml", "xml", "vxml", "cxml", "compiled"));
+                    if (!types.contains(value)) {
+                        throw new CoffeeSacksException(CoffeeSacksException.ERR_BAD_INPUT_FORMAT, "Invalid input format",
+                                sourceLoc, new StringValue(value));
+                    }
+                    break;
+                case "encoding":
+                    break;
+                default:
+                    parserOptions.getLogger().warn(logcategory, "Ignoring unexpected option: %s", key);
             }
-            if (!cxml.equals(node.getNodeName())) {
-                return earlyFailNotGrammar(node, format);
-            }
-        } else {
-            return earlyFailNotXml(node, format);
         }
-
-        try {
-            // Can this ever fail?
-            Processor processor = (Processor) context.getConfiguration().getProcessor();
-
-            String encoding = options.getOrDefault(_encoding, "UTF-8");
-
-            InvisibleXmlParser parser = getParserForGrammar(processor, options, grammar);
-
-            InvisibleXmlDocument document = parser.parse(source, encoding);
-
-            if ("xml".equals(format)) {
-                DocumentBuilder builder = processor.newDocumentBuilder();
-                BuildingContentHandler handler = builder.newBuildingContentHandler();
-                document.getTree(handler);
-                return handler.getDocumentNode().getUnderlyingNode();
-            }
-
-            String json;
-            ParserOptions newOptions = new ParserOptions();
-            newOptions.setAssertValidXmlNames(false);
-            if ("json-tree".equals(format) || "json-text".equals(format)) {
-                SimpleTreeBuilder builder = new SimpleTreeBuilder(newOptions);
-                document.getTree(builder);
-                SimpleTree tree = builder.getTree();
-                json = tree.asJSON();
-            } else {
-                DataTreeBuilder builder = new DataTreeBuilder(newOptions);
-                document.getTree(builder);
-                DataTree tree = builder.getTree();
-                json = tree.asJSON();
-            }
-
-            return jsonToXDM(processor, json);
-        } catch (Exception ex) {
-            throw new XPathException(ex);
-        }
-    }
-
-    private Sequence earlyFailBadGrammar(XdmNode node, String format) {
-        if ("json".equals(format)) {
-            XdmMap map = new XdmMap();
-            map = map.put(new XdmAtomicValue("cs:error"), new XdmAtomicValue("badgrammar"));
-            map = map.put(new XdmAtomicValue("ixml:state"), new XdmAtomicValue("fail"));
-            map = map.put(new XdmAtomicValue("grammar"), node);
-            return map.getUnderlyingValue();
-        }
-
-        XmlXdmWriter writer = new XmlXdmWriter(node.getProcessor());
-        writer.startDocument();
-        writer.declareNamespace("ixml", ixml_state.getNamespaceURI());
-        writer.declareNamespace("cs", cs_namespace);
-        writer.startElement("cs:error");
-        writer.addAttribute("ixml:state", "fail");
-        writer.addAttribute("code", "badgrammar");
-        writer.addNode(node);
-        writer.endElement();
-        writer.endDocument();
-        return writer.getDocument().getUnderlyingNode();
-    }
-
-    private Sequence earlyFailNotGrammar(XdmNode node, String format) {
-        if ("json".equals(format)) {
-            XdmMap map = new XdmMap();
-            map = map.put(new XdmAtomicValue("cs:error"), new XdmAtomicValue("notgrammar"));
-            map = map.put(new XdmAtomicValue("ixml:state"), new XdmAtomicValue("fail"));
-            map = map.put(new XdmAtomicValue("grammar"), node);
-            return map.getUnderlyingValue();
-        }
-
-        XmlXdmWriter writer = new XmlXdmWriter(node.getProcessor());
-        writer.startDocument();
-        writer.declareNamespace("ixml", ixml_state.getNamespaceURI());
-        writer.declareNamespace("cs", cs_namespace);
-        writer.startElement("cs:error");
-        writer.addAttribute("ixml:state", "fail");
-        writer.addAttribute("code", "notgrammar");
-        writer.addNode(node);
-        writer.endElement();
-        writer.endDocument();
-        return writer.getDocument().getUnderlyingNode();
-    }
-
-    private Sequence earlyFailNotXml(XdmNode node, String format) {
-        if ("json".equals(format)) {
-            XdmMap map = new XdmMap();
-            map = map.put(new XdmAtomicValue("cs:error"), new XdmAtomicValue("notxml"));
-            map = map.put(new XdmAtomicValue("ixml:state"), new XdmAtomicValue("fail"));
-            map = map.put(new XdmAtomicValue("grammar"), node);
-            return map.getUnderlyingValue();
-        }
-
-        XmlXdmWriter writer = new XmlXdmWriter(node.getProcessor());
-        writer.startDocument();
-        writer.declareNamespace("ixml", ixml_state.getNamespaceURI());
-        writer.declareNamespace("cs", cs_namespace);
-        writer.startElement("cs:error");
-        writer.addAttribute("ixml:state", "fail");
-        writer.addAttribute("code", "notxml");
-        writer.addNode(node);
-        writer.endElement();
-        writer.endDocument();
-        return writer.getDocument().getUnderlyingNode();
     }
 
     protected Item jsonToXDM(Processor processor, String json) throws SaxonApiException {
@@ -276,24 +313,50 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         return item.getUnderlyingValue();
     }
 
-    protected InvisibleXmlParser getParserForGrammar(Processor processor, HashMap<String,String> options, NodeInfo grammar) throws IOException, SaxonApiException {
-        InvisibleXmlParser parser;
-        if (cache.nodeCache.containsKey(grammar)) {
-            parser = cache.nodeCache.get(grammar);
-        } else {
-            // This really isn't very nice
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            Serializer serializer = processor.newSerializer(baos);
-            serializer.serialize(grammar);
-            ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
-            parser = invisibleXml.getParser(bais, grammar.getBaseURI());
+    private class InvisibleXmlParserFunction implements Callable {
+        private final InvisibleXmlParser parser;
+        private final Map<String,String> options;
 
-            if ("true".equals(options.getOrDefault(_cache, "true"))
-                    || "yes".equals(options.getOrDefault(_cache, "yes"))) {
-                cache.nodeCache.put(grammar, parser);
-            }
+        public InvisibleXmlParserFunction(InvisibleXmlParser parser, Map<String,String> options) {
+            this.parser = parser;
+            this.options = options;
         }
 
-        return parser;
+        @Override
+        public Sequence call(XPathContext context, Sequence[] sequences) throws XPathException {
+            String input = sequences[0].head().getStringValue();
+            String format = options.getOrDefault(_format, "xml");
+
+            try {
+                Processor processor = (Processor) context.getConfiguration().getProcessor();
+                InvisibleXmlDocument document = parser.parse(input);
+
+                if ("xml".equals(format)) {
+                    DocumentBuilder builder = processor.newDocumentBuilder();
+                    BuildingContentHandler handler = builder.newBuildingContentHandler();
+                    document.getTree(handler);
+                    return handler.getDocumentNode().getUnderlyingNode();
+                }
+
+                String json;
+                ParserOptions newOptions = new ParserOptions();
+                newOptions.setAssertValidXmlNames(false);
+                if ("json-tree".equals(format) || "json-text".equals(format)) {
+                    SimpleTreeBuilder builder = new SimpleTreeBuilder(newOptions);
+                    document.getTree(builder);
+                    SimpleTree tree = builder.getTree();
+                    json = tree.asJSON();
+                } else {
+                    DataTreeBuilder builder = new DataTreeBuilder(newOptions);
+                    document.getTree(builder);
+                    DataTree tree = builder.getTree();
+                    json = tree.asJSON();
+                }
+
+                return jsonToXDM(processor, json);
+            } catch (Exception ex) {
+                throw new XPathException(ex);
+            }
+        }
     }
 }
