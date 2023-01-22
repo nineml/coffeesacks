@@ -41,8 +41,8 @@
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../org/nineml/coffeesacks/ClearCacheFunction.html" title="class in org.nineml.coffeesacks"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/nineml/coffeesacks/GrammarStringFunction.html" title="class in org.nineml.coffeesacks"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/nineml/coffeesacks/CoffeeSacksException.html" title="class in org.nineml.coffeesacks"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../org/nineml/coffeesacks/HygieneReportFunction.html" title="class in org.nineml.coffeesacks"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/nineml/coffeesacks/CommonDefinition.html" target="_top">Frames</a></li>
@@ -106,7 +106,7 @@
 <li class="blockList">
 <dl>
 <dt>Direct Known Subclasses:</dt>
-<dd><a href="../../../org/nineml/coffeesacks/ClearCacheFunction.html" title="class in org.nineml.coffeesacks">ClearCacheFunction</a>, <a href="../../../org/nineml/coffeesacks/GrammarStringFunction.html" title="class in org.nineml.coffeesacks">GrammarStringFunction</a>, <a href="../../../org/nineml/coffeesacks/GrammarUriFunction.html" title="class in org.nineml.coffeesacks">GrammarUriFunction</a>, <a href="../../../org/nineml/coffeesacks/HygieneReportFunction.html" title="class in org.nineml.coffeesacks">HygieneReportFunction</a>, <a href="../../../org/nineml/coffeesacks/ParserOptionsFunction.html" title="class in org.nineml.coffeesacks">ParserOptionsFunction</a>, <a href="../../../org/nineml/coffeesacks/ParseStringFunction.html" title="class in org.nineml.coffeesacks">ParseStringFunction</a>, <a href="../../../org/nineml/coffeesacks/ParseUriFunction.html" title="class in org.nineml.coffeesacks">ParseUriFunction</a></dd>
+<dd><a href="../../../org/nineml/coffeesacks/HygieneReportFunction.html" title="class in org.nineml.coffeesacks">HygieneReportFunction</a>, <a href="../../../org/nineml/coffeesacks/LoadGrammar.html" title="class in org.nineml.coffeesacks">LoadGrammar</a>, <a href="../../../org/nineml/coffeesacks/MakeParser.html" title="class in org.nineml.coffeesacks">MakeParser</a></dd>
 </dl>
 <hr>
 <br>
@@ -140,10 +140,14 @@ extends net.sf.saxon.lib.ExtensionFunctionDefinition</pre>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/nineml/coffeesacks/CommonDefinition.html#cxml">cxml</a></span></code>&nbsp;</td>
 </tr>
 <tr class="altColor">
+<td class="colFirst"><code>static int</code></td>
+<td class="colLast"><code><span class="memberNameLink"><a href="../../../org/nineml/coffeesacks/CommonDefinition.html#FOLLOW_REDIRECT_LIMIT">FOLLOW_REDIRECT_LIMIT</a></span></code>&nbsp;</td>
+</tr>
+<tr class="rowColor">
 <td class="colFirst"><code>static net.sf.saxon.s9api.QName</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/nineml/coffeesacks/CommonDefinition.html#ixml_state">ixml_state</a></span></code>&nbsp;</td>
 </tr>
-<tr class="rowColor">
+<tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
 <td class="colLast"><code><span class="memberNameLink"><a href="../../../org/nineml/coffeesacks/CommonDefinition.html#logcategory">logcategory</a></span></code>&nbsp;</td>
 </tr>
@@ -162,8 +166,7 @@ extends net.sf.saxon.lib.ExtensionFunctionDefinition</pre>
 <th class="colOne" scope="col">Constructor and Description</th>
 </tr>
 <tr class="altColor">
-<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/nineml/coffeesacks/CommonDefinition.html#CommonDefinition-net.sf.saxon.Configuration-org.nineml.coffeesacks.ParserCache-">CommonDefinition</a></span>(net.sf.saxon.Configuration&nbsp;config,
-                <a href="../../../org/nineml/coffeesacks/ParserCache.html" title="class in org.nineml.coffeesacks">ParserCache</a>&nbsp;cache)</code>&nbsp;</td>
+<td class="colOne"><code><span class="memberNameLink"><a href="../../../org/nineml/coffeesacks/CommonDefinition.html#CommonDefinition-net.sf.saxon.Configuration-">CommonDefinition</a></span>(net.sf.saxon.Configuration&nbsp;config)</code>&nbsp;</td>
 </tr>
 </table>
 </li>
@@ -236,7 +239,7 @@ extends net.sf.saxon.lib.ExtensionFunctionDefinition</pre>
 <a name="cs_namespace">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>cs_namespace</h4>
 <pre>public static final&nbsp;java.lang.String cs_namespace</pre>
@@ -244,6 +247,15 @@ extends net.sf.saxon.lib.ExtensionFunctionDefinition</pre>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../constant-values.html#org.nineml.coffeesacks.CommonDefinition.cs_namespace">Constant Field Values</a></dd>
 </dl>
+</li>
+</ul>
+<a name="FOLLOW_REDIRECT_LIMIT">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>FOLLOW_REDIRECT_LIMIT</h4>
+<pre>public static&nbsp;int FOLLOW_REDIRECT_LIMIT</pre>
 </li>
 </ul>
 </li>
@@ -254,14 +266,13 @@ extends net.sf.saxon.lib.ExtensionFunctionDefinition</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
-<a name="CommonDefinition-net.sf.saxon.Configuration-org.nineml.coffeesacks.ParserCache-">
+<a name="CommonDefinition-net.sf.saxon.Configuration-">
 <!--   -->
 </a>
 <ul class="blockListLast">
 <li class="blockList">
 <h4>CommonDefinition</h4>
-<pre>public&nbsp;CommonDefinition(net.sf.saxon.Configuration&nbsp;config,
-                        <a href="../../../org/nineml/coffeesacks/ParserCache.html" title="class in org.nineml.coffeesacks">ParserCache</a>&nbsp;cache)</pre>
+<pre>public&nbsp;CommonDefinition(net.sf.saxon.Configuration&nbsp;config)</pre>
 </li>
 </ul>
 </li>
@@ -290,8 +301,8 @@ extends net.sf.saxon.lib.ExtensionFunctionDefinition</pre>
 </div>
 <div class="subNav">
 <ul class="navList">
-<li><a href="../../../org/nineml/coffeesacks/ClearCacheFunction.html" title="class in org.nineml.coffeesacks"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
-<li><a href="../../../org/nineml/coffeesacks/GrammarStringFunction.html" title="class in org.nineml.coffeesacks"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
+<li><a href="../../../org/nineml/coffeesacks/CoffeeSacksException.html" title="class in org.nineml.coffeesacks"><span class="typeNameLink">Prev&nbsp;Class</span></a></li>
+<li><a href="../../../org/nineml/coffeesacks/HygieneReportFunction.html" title="class in org.nineml.coffeesacks"><span class="typeNameLink">Next&nbsp;Class</span></a></li>
 </ul>
 <ul class="navList">
 <li><a href="../../../index.html?org/nineml/coffeesacks/CommonDefinition.html" target="_top">Frames</a></li>
