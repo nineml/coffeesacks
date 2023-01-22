@@ -11,16 +11,8 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:choose>
-    <xsl:when test="cs:parser-options(map{'allowUndefinedSymbols': 'true'})">
-      <xsl:variable name="grammar" select="cs:grammar-uri('messy.ixml')"/>
-      <xsl:sequence select="cs:hygiene-report($grammar)"/>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:message terminate="yes"
-                   select="'Failed to set parser option: allowUndefinedSymbols'"/>
-    </xsl:otherwise>
-  </xsl:choose>
+  <xsl:sequence select="cs:hygiene-report(xs:anyURI('messy.ixml'),
+                            map{'allowUndefinedSymbols': 'true'})"/>
 </xsl:template>
 
 </xsl:stylesheet>

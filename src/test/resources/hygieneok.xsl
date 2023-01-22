@@ -11,18 +11,11 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:choose>
-    <xsl:when test="cs:parser-options(map{'allowUndefinedSymbols': 'true'})">
-      <xsl:variable name="grammar" select="cs:grammar-uri('messy.ixml')"/>
-      <doc>
-        <xsl:sequence select="cs:parse-string($grammar, 'ax')"/>
-      </doc>
-    </xsl:when>
-    <xsl:otherwise>
-      <xsl:message terminate="yes"
-                   select="'Failed to set parser option: allowUndefinedSymbols'"/>
-    </xsl:otherwise>
-  </xsl:choose>
+  <xsl:variable name="parser" select="cs:load-grammar('messy.ixml',
+                                         map {'allowUndefinedSymbols': 'true'})"/>
+  <doc>
+    <xsl:sequence select="$parser('ax')"/>
+  </doc>
 </xsl:template>
 
 </xsl:stylesheet>

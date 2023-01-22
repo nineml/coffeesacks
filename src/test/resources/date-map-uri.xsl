@@ -12,10 +12,11 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:variable name="grammar" select="cs:grammar-uri('date.ixml')"/>
+  <xsl:variable name="parser" select="cs:load-grammar('date.ixml',
+                                          map { 'format': 'json' })"/>
   <xsl:variable name="map" 
-                select="cs:parse-uri($grammar, 'date.inp',
-                                     map { 'format': 'json' })"/>
+                select="$parser(unparsed-text('date.inp'))"/>
+
   <xsl:variable name="date" select="$map?date"/>
   <!-- do map:get so that we can be sure the order will be consistent. -->
   <doc>

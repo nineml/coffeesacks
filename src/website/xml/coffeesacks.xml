@@ -13,7 +13,8 @@
 <author>
   <personname>Norm Tovey Walsh</personname>
 </author>
-<copyright><year>2022</year><holder>Norm Tovey-Walsh</holder></copyright>
+<copyright><year>2022</year><year>2023</year>
+<holder>Norm Tovey-Walsh</holder></copyright>
 <productname>coffeesacks</productname>
 <productnumber>@@VERSION@@</productnumber>
 <bibliomisc role="coffeegrinder">@@GRINDERVERSION@@</bibliomisc>
@@ -35,9 +36,7 @@ XML tools.</para>
 <title>Invisible XML in Saxon</title>
 
 <para>The CoffeeSacks extension functions allow a stylesheet to load
-an Invisible XML grammar and process an input against it. Grammar processing
-can be expensive. To mitigate this cost, by default CoffeeSacks keeps a cache
-of parsed grammar.</para>
+an Invisible XML grammar and process an input against it.</para>
 
 <para>The class <classname>org.nineml.coffeesacks.RegisterCoffeeSacks</classname>
 is suitable for registering the extension functions to a Saxon HE processor.</para>
@@ -66,9 +65,10 @@ grammar and return the result:</para>
                 version="3.0">
 
 <xsl:template name="xsl:initial-template">
-  <xsl:variable name="grammar" select="cs:grammar-uri('date.ixml')"/>
+  <xsl:variable name="parser"
+                select="cs:load-grammar('date.ixml')"/>
   <doc>
-    <xsl:sequence select="cs:parse-string($grammar, '15 February 2022')"/>
+    <xsl:sequence select="$parser('15 February 2022')"/>
   </doc>
 </xsl:template>
 
@@ -89,48 +89,41 @@ grammar and return the result:</para>
 <chapter xml:id="loading-grammars">
 <title>Loading grammars</title>
 
-<para>Before it can be used, a grammar must be loaded. You can load Invisible XML
-grammars in either the text or XML syntax. You can also load grammars in the
-<link xlink:href="https://coffeegrinder.nineml.org/">CoffeeGrinder</link> compiled
-format.</para>
+<para>Before it can be used, a parser must be constructed for the
+grammar. You can load Invisible XML grammars in either the text or XML
+syntax. You can also load grammars in the <link
+xlink:href="https://coffeegrinder.nineml.org/">CoffeeGrinder</link>
+compiled format.</para>
 
-<para>The grammar loading functions return an XML document. If the
-function succeeds, this will be a compiled representation of the
-grammar. It is not very useful except as the grammar input to one of
-<link linkend="parsing-inputs">the parsing functions</link>.
-(If you’re interested in a useful XML
-representation of an Invisible XML grammar, parse the grammar with the
-Invisible XML grammar.)</para>
+<note>
+<para>The API has been redesigned and greatly simplified in version
+2.x. Instead of having a few different functions that take a grammar
+as an argument, there are now just a couple of functions that return a
+parser for the grammar.</para>
+</note>
 
-<para>If the grammar could not be loaded, what will be returned will
-be a <tag>cs:error</tag> document (where the <code>cs</code> prefix is
-bound to
-<uri type="xmlnamespace">https://ninenl.org/ns/coffeesacks/error</uri>).
-This document will have a <tag class="attribute">code</tag> attribute
-that attempts to identify the error. The contents of the error
-document will further describe the error.</para>
-
-<para>The only code returned by the grammar functions is
-<code>badgrammar</code>, indicating that the attempt to parse the grammar
-failed.</para>
+<para>The parser creation functions return an XPath function that
+takes a single argument, the string to be parsed. If the grammar
+cannot be parsed, an error is raised. This error can be captured with
+<link xlink:href="https://www.w3.org/TR/xslt-30/#try-catch">try/catch</link>.</para>
 
 <section>
-<title>cs:grammar-string</title>
+<title>cs:load-grammar</title>
 
-<para>This function takes a string in the Invisible XML grammar format and parses
-it into a grammar. You can load the XML grammar formats directly as XML. You can load
-grammars from URIs with <function>cs:grammar-uri</function>.</para>
+<para>This function takes the URI of an Invisible XML grammar and
+constructs a parser for that grammar.</para>
 
 <funcsynopsis>
 <funcprototype>
 <funcdef>
-<type>node()</type>
-<function>cs:grammar-string</function>
+<type>function($input as xs:string) as item()</type>
+<function>cs:load-grammar</function>
 </funcdef>
 <paramdef>
 <type>xs:string</type>
-<parameter>grammar</parameter>
-<phrase role="refpurpose">The Invisible XML grammar in text format</phrase>
+<parameter>uri</parameter>
+<phrase role="refpurpose">A URI that identifies an Invisible XML
+grammar</phrase>
 </paramdef>
 </funcprototype>
 </funcsynopsis>
@@ -138,13 +131,14 @@ grammars from URIs with <function>cs:grammar-uri</function>.</para>
 <funcsynopsis>
 <funcprototype>
 <funcdef>
-<type>node()</type>
-<function>cs:grammar-string</function>
+<type>function($input as xs:string) as item()</type>
+<function>cs:load-grammar</function>
 </funcdef>
 <paramdef>
 <type>xs:string</type>
-<parameter>grammar</parameter>
-<phrase role="refpurpose">The Invisible XML grammar in text format</phrase>
+<parameter>uri</parameter>
+<phrase role="refpurpose">A URI that identifies an Invisible XML
+grammar</phrase>
 </paramdef>
 <paramdef>
 <type>map(xs:string, xs:string)</type>
@@ -154,35 +148,29 @@ grammars from URIs with <function>cs:grammar-uri</function>.</para>
 </funcprototype>
 </funcsynopsis>
 
-<para>The following options are recognized:</para>
+<para>See <xref linkend="parser-options"/> for a description
+of the available options.</para>
 
-<variablelist>
-<varlistentry>
-<term><code>type</code></term>
-<listitem>
-<para>Identifies the type of grammar to parse. The only value
-accepted is <code>ixml</code>, the text format.</para>
-<para>It is an error to specify any other value.</para>
-</listitem>
-</varlistentry>
-</variablelist>
+<para>If the return <literal>format</literal> is XML, an XML node will be returned.
+For the JSON return types, an XDM map will be returned.</para>
+
 </section>
 
 <section>
-<title>cs:grammar-uri</title>
+<title>cs:make-parser</title>
 
-<para>This function loads a grammar from a URI.</para>
+<para>This function constructs a parser from its input.</para>
 
 <funcsynopsis>
 <funcprototype>
 <funcdef>
-<type>node()</type>
-<function>cs:grammar-uri</function>
+<type>function($input as xs:string) as item()</type>
+<function>cs:make-parser</function>
 </funcdef>
 <paramdef>
-<type>xs:string</type>
-<parameter>href</parameter>
-<phrase role="refpurpose">The grammar location</phrase>
+<type>item()</type>
+<parameter>input</parameter>
+<phrase role="refpurpose">An input grammar</phrase>
 </paramdef>
 </funcprototype>
 </funcsynopsis>
@@ -190,13 +178,13 @@ accepted is <code>ixml</code>, the text format.</para>
 <funcsynopsis>
 <funcprototype>
 <funcdef>
-<type>node()</type>
-<function>cs:grammar-uri</function>
+<type>function($input as xs:string) as item()</type>
+<function>cs:make-parser</function>
 </funcdef>
 <paramdef>
-<type>xs:string</type>
-<parameter>href</parameter>
-<phrase role="refpurpose">The grammar location</phrase>
+<type>item()</type>
+<parameter>input</parameter>
+<phrase role="refpurpose">An input grammar</phrase>
 </paramdef>
 <paramdef>
 <type>map(xs:string, xs:string)</type>
@@ -206,299 +194,65 @@ accepted is <code>ixml</code>, the text format.</para>
 </funcprototype>
 </funcsynopsis>
 
-<para>The following options are recognized:</para>
+<para>Exactly what this function does depends on the type of
+<code>$input</code>.</para>
 
 <variablelist>
-<varlistentry>
-<term><code>cache</code></term>
+<varlistentry><term>XML node</term>
 <listitem>
-<para>If unspecified or specified with the value “<code>true</code>”
-or “<code>yes</code>”, the grammar will be cached. If any other value
-is specified, the grammar will not be cached.
+<para>The input is assumed to be an XML version of an invisible XML
+grammar (a “visible XML grammar”). The function will attempt to
+construct a parser for that grammar.
 </para>
-<para>Caching the grammar saves the mapping between the URI and the
-parsed XML node.</para>
 </listitem>
 </varlistentry>
-<varlistentry>
-<term><code>type</code></term>
+<varlistentry><term><code>xs:anyURI</code></term>
 <listitem>
-<para>Identifies the type of grammar to parse:</para>
-  <variablelist>
-  <varlistentry>
-  <term><code>ixml</code></term>
-  <listitem>
-  <para>For Invisible XML in text format.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>xml</code> or <code>vxml</code></term>
-  <listitem>
-  <para>For Invisible XML in XML format.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>cxml</code> or <code>compiled</code></term>
-  <listitem>
-  <para>For a grammar in the compiled
-<link xlink:href="https://coffeegrinder.nineml.org/">CoffeeGrinder</link> format.
-  </para>
-  </listitem>
-  </varlistentry>
-  </variablelist>
-<para>It is an error to specify any other value.</para>
-<para>This is not usually necessary. The grammar compiler will “sniff” the first 4,095
-bytes of the file to identify the grammar which is usually sufficient.</para>
+<para>The input is assumed to be a URI that identifies the location of
+an invisible XML grammar. It will be loaded and parsed just as
+<function>cs:load-grammar</function> would.
+</para>
 </listitem>
 </varlistentry>
-<varlistentry>
-<term><code>encoding</code></term>
+<varlistentry><term><code>xs:anyAtomicType</code></term>
 <listitem>
-<para>Specifies the encoding to use for Invisible XML grammars in the text format.
+<para>The string value of the input is assumed to be an iinvisible XML grammar.
+The function willa attempt to construct a parser for that grammar.
 </para>
+</listitem>
+</varlistentry>
+<varlistentry><term>anything else</term>
+<listitem>
+<para>Any other input will cause an error.</para>
 </listitem>
 </varlistentry>
 </variablelist>
+
+<para>See <xref linkend="parser-options"/> for a description
+of the available options.</para>
+
+<para>If the return <literal>format</literal> is XML, an XML node will be returned.
+For the JSON return types, an XDM map will be returned.</para>
+
 </section>
 </chapter>
 
 <chapter xml:id="parsing-inputs">
 <title>Parsing inputs</title>
 
-<para>The parsing functions attempts to parse the input string with
-the grammar provided. The result will be an XML document (or a map)
-that is either the parsed result or a document that specifies that an
-error occurred.</para>
-
-<para>The grammar provided must be in XML format. This can be obtained
-with the <link linkend="loading-grammars">grammar loading
-functions</link> or, in the case of XML format grammars, through any
-convenient means.</para>
-
-<para>The parsing functions return an XML document (or a map). If the
-parse is successful, this will be a representation of the result of
-parsing the input with the grammar.</para>
+<para>The grammar parsing functions return a function that will parse
+an input string. The parsing function returns an XML document (or a
+map). If the parse is successful, this will be a representation of the
+result of parsing the input with the grammar.</para>
 
 <para>If the parse is unsuccessful, a top-level <tag>ixml:state</tag>
 attribute (or property) with the value “<code>fail</code>” indicates
 that the parse did not succeed. The rest of the document will contain
 information that is designed to help you identify the error.</para>
 
-<para>If the grammar could not be used, what will be returned will
-be a <tag>cs:error</tag> document (where the <code>cs</code> prefix is
-bound to
-<uri type="xmlnamespace">https://ninenl.org/ns/coffeesacks/error</uri>).
-This document will have a <tag class="attribute">code</tag> attribute
-that attempts to identify the error. The contents of the error
-document will further describe the error.</para>
-
-<para>(If a JSON result was requested, the error document will have a
-<code>cs:error</code> property with the value of the code.)</para>
-
-<para>The possible codes are <code>notgrammar</code>, if the input
-grammar was not a recognized XML representation of an Invisible XML
-grammar, or <code>notxml</code>, if the input grammar was not
-XML.</para>
-
-<section>
-<title>cs:parse-string</title>
-
-<para>Parses an input string against a grammar.</para>
-
-<funcsynopsis>
-<funcprototype>
-<funcdef>
-<type>item()</type>
-<function>cs:parse-string</function>
-</funcdef>
-<paramdef>
-<type>node</type>
-<parameter>grammar</parameter>
-<phrase role="refpurpose">The ixml grammar</phrase>
-</paramdef>
-<paramdef>
-<type>xs:string</type>
-<parameter>input</parameter>
-<phrase role="refpurpose">The input</phrase>
-</paramdef>
-</funcprototype>
-</funcsynopsis>
-
-<funcsynopsis>
-<funcprototype>
-<funcdef>
-<type>item()</type>
-<function>cs:parse-string</function>
-</funcdef>
-<paramdef>
-<type>node</type>
-<parameter>grammar</parameter>
-<phrase role="refpurpose">The ixml grammar</phrase>
-</paramdef>
-<paramdef>
-<type>xs:string</type>
-<parameter>input</parameter>
-<phrase role="refpurpose">The input</phrase>
-</paramdef>
-<paramdef>
-<type>map(xs:string, xs:string)</type>
-<parameter>options</parameter>
-<phrase role="refpurpose">Parsing options</phrase>
-</paramdef>
-</funcprototype>
-</funcsynopsis>
-
-<para>The following options are recognized:</para>
-
-<variablelist>
-<varlistentry>
-<term><code>cache</code></term>
-<listitem>
-<para>If unspecified or specified with the value “<code>true</code>”
-or “<code>yes</code>”, the grammar will be cached. If any other value
-is specified, the grammar will not be cached.
-</para>
-<para>Caching at this level saves the mapping between the XML representation
-of the grammar and the underlying Invisible XML parser object.</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>format</code></term>
-<listitem>
-<para>Identifies the format of the result:</para>
-  <variablelist>
-  <varlistentry>
-  <term><code>xml</code></term>
-  <listitem>
-  <para>Returns an XML node.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>json</code> or <code>json-data</code></term>
-  <listitem>
-  <para>Returns a “data” map. This method will fail if the result contains mixed content.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>json-tree</code> or <code>json-text</code></term>
-  <listitem>
-  <para>Returns a “text” map. This map structure can represent any tree.
-  </para>
-  </listitem>
-  </varlistentry>
-  </variablelist>
-<para>It is an error to specify any other value.</para>
-</listitem>
-</varlistentry>
-</variablelist>
-</section>
-
-<section>
-<title>cs:parse-uri</title>
-
-<para>Loads the document at the specified URI and attempts to parse it with
-the grammar provided.</para>
-
-<funcsynopsis>
-<funcprototype>
-<funcdef>
-<type>item()</type>
-<function>cs:parse-uri</function>
-</funcdef>
-<paramdef>
-<type>node</type>
-<parameter>grammar</parameter>
-<phrase role="refpurpose">The ixml grammar</phrase>
-</paramdef>
-<paramdef>
-<type>xs:string</type>
-<parameter>href</parameter>
-<phrase role="refpurpose">The document location</phrase>
-</paramdef>
-</funcprototype>
-</funcsynopsis>
-
-<funcsynopsis>
-<funcprototype>
-<funcdef>
-<type>item()</type>
-<function>cs:parse-uri</function>
-</funcdef>
-<paramdef>
-<type>node</type>
-<parameter>grammar</parameter>
-<phrase role="refpurpose">The ixml grammar</phrase>
-</paramdef>
-<paramdef>
-<type>xs:string</type>
-<parameter>href</parameter>
-<phrase role="refpurpose">The document location</phrase>
-</paramdef>
-<paramdef>
-<type>map(xs:string, xs:string)</type>
-<parameter>options</parameter>
-<phrase role="refpurpose">Parsing options</phrase>
-</paramdef>
-</funcprototype>
-</funcsynopsis>
-
-<para>The following options are recognized:</para>
-
-<variablelist>
-<varlistentry>
-<term><code>cache</code></term>
-<listitem>
-<para>If unspecified or specified with the value “<code>true</code>”
-or “<code>yes</code>”, the grammar will be cached. If any other value
-is specified, the grammar will not be cached.
-</para>
-<para>Caching at this level saves the mapping between the XML representation
-of the grammar and the underlying Invisible XML parser object.</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>encoding</code></term>
-<listitem>
-<para>Specifies the encoding to use for the input document.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>format</code></term>
-<listitem>
-<para>Identifies the format of the result:</para>
-  <variablelist>
-  <varlistentry>
-  <term><code>xml</code></term>
-  <listitem>
-  <para>Returns an XML node.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>json</code> or <code>json-data</code></term>
-  <listitem>
-  <para>Returns a “data” map. This method will fail if the result contains mixed content.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>json-text</code> or <code>json-text</code></term>
-  <listitem>
-  <para>Returns a “text” map. This map structure can represent any tree.
-  </para>
-  </listitem>
-  </varlistentry>
-  </variablelist>
-<para>It is an error to specify any other value.</para>
-</listitem>
-</varlistentry>
-</variablelist>
-</section>
+<para>The parser will not load a URI for you. If you want to parse an
+external document, load it with <code>unparsed-text</code> and pass the 
+resulting string to the parser.</para>
 </chapter>
 
 <chapter>
@@ -511,12 +265,26 @@ undefined, unused, or unproductive symbols.</para>
 <funcsynopsis>
 <funcprototype>
 <funcdef>
-<type>node()</type>
+<type>item()</type>
 <function>cs:hygiene-report</function>
 </funcdef>
 <paramdef>
-<type>node</type>
-<parameter>grammar</parameter>
+<type>item()</type>
+<parameter>input</parameter>
+<phrase role="refpurpose">The ixml grammar</phrase>
+</paramdef>
+</funcprototype>
+</funcsynopsis>
+
+<funcsynopsis>
+<funcprototype>
+<funcdef>
+<type>item()</type>
+<function>cs:hygiene-report</function>
+</funcdef>
+<paramdef>
+<type>item()</type>
+<parameter>input</parameter>
 <phrase role="refpurpose">The ixml grammar</phrase>
 </paramdef>
 <paramdef>
@@ -527,44 +295,11 @@ undefined, unused, or unproductive symbols.</para>
 </funcprototype>
 </funcsynopsis>
 
-<para>The following options are recognized:</para>
+<para>See <xref linkend="parser-options"/> for a description
+of the available options.</para>
 
-<variablelist>
-<varlistentry>
-<term><code>cache</code></term>
-<listitem>
-<para>If unspecified or specified with the value “<code>true</code>”
-or “<code>yes</code>”, the grammar will be cached. If any other value
-is specified, the grammar will not be cached.
-</para>
-<para>Caching at this level saves the mapping between the XML representation
-of the grammar and the underlying Invisible XML parser object.</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>format</code></term>
-<listitem>
-<para>Identifies the format of the result:</para>
-  <variablelist>
-  <varlistentry>
-  <term><code>xml</code></term>
-  <listitem>
-  <para>Returns an XML node.
-  </para>
-  </listitem>
-  </varlistentry>
-  <varlistentry>
-  <term><code>json</code></term>
-  <listitem>
-  <para>Returns a map.
-  </para>
-  </listitem>
-  </varlistentry>
-  </variablelist>
-<para>It is an error to specify any other value.</para>
-</listitem>
-</varlistentry>
-</variablelist>
+<para>Like <function>cs:make-parser</function>, this function will accept an
+XML node, an <code>xs:anyURI</code>, or a string.</para>
 
 <para>It returns a report.</para>
 
@@ -618,27 +353,45 @@ This is an example report for this grammar:</para>
 
 </chapter>
 
-<chapter>
-<title>cs:parser-options</title>
+<chapter xml:id="parser-options">
+<title>Parser options</title>
 
-<para>Set the parser options to use in subsequent parses.
+<para>There are two kinds of parser options: parser construction
+options and Invisible XML parser options. For convenience, they’re
+both allowed in the same options map.
 </para>
 
-<funcsynopsis>
-<funcprototype>
-<funcdef>
-<type>xs:boolean</type>
-<function>cs:parser-options</function>
-</funcdef>
-<paramdef>
-<type>map(xs:string, xs:string)</type>
-<parameter>options</parameter>
-<phrase role="refpurpose">Parser options</phrase>
-</paramdef>
-</funcprototype>
-</funcsynopsis>
+<section>
+<title>Parser construction options</title>
 
-<para>The following options are recognized:</para>
+<variablelist>
+<varlistentry>
+<term><code>type</code>, string</term>
+<listitem>
+<para>The input type. One of “<literal>ixml</literal>” (an invisible XML grammar),
+“<literal>xml</literal>” or “<literal>vxml</literal>” (a visible XML grammar),
+or “<literal>cxml</literal>” or “<literal>compiled</literal>” (a compiled
+XML grammar).
+</para>
+<para>In most circumstances, you don’t need to specify the input type.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>format</code>, string</term>
+<listitem>
+<para>The output type. One of “<literal>xml</literal>” (an XML node; the default),
+“<literal>json</literal>” or “<literal>json-data</literal>” (a “data” map),
+or “<literal>json-text</literal>” (a “text” map).
+</para>
+</listitem>
+</varlistentry>
+</variablelist>
+</section>
+
+<section>
+<title>Invisible XML parser options</title>
+
+<para>The following parser options are recognized:</para>
 
 <variablelist>
 <varlistentry>
@@ -736,31 +489,9 @@ and “<code>GLL</code>” for the GLL parser. The Earley parser is the default.
 </varlistentry>
 </variablelist>
 
-<para>The function will log errors (unrecognized options or values).
-It will return false if any errors occur, otherwise it returns true.
-</para>
-
-<para>Changing parser options causes the cache to be cleared.</para>
-</chapter>
-
-<chapter>
-<title>cs:clear-cache</title>
-
-<para>Clears the grammar cache.</para>
-
-<funcsynopsis>
-<funcprototype>
-<funcdef>
-<type>xs:boolean</type>
-<function>cs:clear-cache</function>
-</funcdef>
-<void/>
-</funcprototype>
-</funcsynopsis>
-
-<para>Returns true if it clears the cache which, practically speaking,
-it always does.</para>
-
+<para>The function will log errors (unrecognized options or values)
+and ignore the option.</para>
+</section>
 </chapter>
 
 <chapter>
