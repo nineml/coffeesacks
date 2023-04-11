@@ -563,10 +563,10 @@ supported character classes.</para>
 
 <revhistory>
 <revision>
-  <revnumber>1.99.14</revnumber>
+  <revnumber>2.0.0</revnumber>
   <date>2023-04-11</date>
   <revdescription>
-    <para>Testing the new CI automation</para>
+    <para>Making the 2.x code base the current release.</para>
   </revdescription>
 </revision>
 <revision>
