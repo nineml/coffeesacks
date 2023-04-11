@@ -24,6 +24,13 @@ public class StylesheetTests extends TestConfiguration {
     }
 
     @Test
+    public void uriInputXmlOutputExample() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/date-xml-example.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc><date><day>15</day><month>February</month><year>2022</year></date></doc>", serialize(result));
+    }
+
+    @Test
     public void xmlInputXmlOutput() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/date-xml-xml.xsl");
         XdmNode result = transform(stylesheet, stylesheet);

@@ -16,3 +16,6 @@
     width: 5em;
 }
 
+.literal {
+    white-space: nowrap;
+}
