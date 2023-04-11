@@ -15,10 +15,10 @@
 </author>
 <copyright><year>2022</year><year>2023</year>
 <holder>Norm Tovey-Walsh</holder></copyright>
-<productname>coffeesacks</productname>
-<productnumber>@@VERSION@@</productnumber>
-<bibliomisc role="coffeegrinder">@@GRINDERVERSION@@</bibliomisc>
-<bibliomisc role="coffeefilter">@@FILTERVERSION@@</bibliomisc>
+<productname>CoffeeSacks</productname>
+<productnumber><?coffeesacks-version?></productnumber>
+<bibliomisc role="coffeegrinder"><?coffeegrinder-version?></bibliomisc>
+<bibliomisc role="coffeefilter"><?coffeefilter-version?></bibliomisc>
 </info>
 
 <preface>
@@ -45,38 +45,22 @@ is suitable for registering the extension functions to a Saxon HE processor.</pa
 <uri>http://nineml.com/ns/coffeesacks</uri> which is taken to be bound to
 the <code>cs:</code> namespace prefix in this document.</para>
 
-<para>Given an Invisible XML grammar for dates in <uri>dates.ixml</uri>:</para>
+<para>Given an Invisible XML grammar for dates in <uri>date.ixml</uri>:</para>
 
-<programlisting>date: s?, day, -s, month, (-s, year)? .
--s: -" "+ .
-day: digit, digit? .
--digit: "0"; "1"; "2"; "3"; "4"; "5"; "6"; "7"; "8"; "9".
-month: "January"; "February"; "March"; "April";
-       "May"; "June"; "July"; "August";
-       "September"; "October"; "November"; "December".
-year: (digit, digit)?, digit, digit .</programlisting>
+<programlisting language="ixml">
+<xi:include href="../../test/resources/date.ixml" parse="text"/>
+</programlisting>
 
 <para>A stylesheet like the following will parse a string against that
 grammar and return the result:</para>
 
-<programlisting><![CDATA[<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-                xmlns:cs="http://nineml.com/ns/coffeesacks"
-                exclude-result-prefixes="#all"
-                version="3.0">
-
-<xsl:template name="xsl:initial-template">
-  <xsl:variable name="parser"
-                select="cs:load-grammar('date.ixml')"/>
-  <doc>
-    <xsl:sequence select="$parser('15 February 2022')"/>
-  </doc>
-</xsl:template>
-
-</xsl:stylesheet>]]></programlisting>
+<programlisting language="xml">
+<xi:include href="../../test/resources/date-xml-example.xsl" parse="text"/>
+</programlisting>
 
 <para>Returning:</para>
 
-<programlisting><![CDATA[<doc>
+<programlisting language="xml"><![CDATA[<doc>
    <date>
       <day>15</day>
       <month>February</month>
@@ -159,7 +143,7 @@ For the JSON return types, an XDM map will be returned.</para>
 <section>
 <title>cs:make-parser</title>
 
-<para>This function constructs a parser from its input.</para>
+<para>This function takes an Invisible XML grammar and constructs a parser for that grammar.</para>
 
 <funcsynopsis>
 <funcprototype>
@@ -216,8 +200,8 @@ an invisible XML grammar. It will be loaded and parsed just as
 </varlistentry>
 <varlistentry><term><code>xs:anyAtomicType</code></term>
 <listitem>
-<para>The string value of the input is assumed to be an iinvisible XML grammar.
-The function willa attempt to construct a parser for that grammar.
+<para>The string value of the input is assumed to be an Invisible XML grammar.
+The function will attempt to construct a parser for that grammar.
 </para>
 </listitem>
 </varlistentry>
@@ -305,11 +289,9 @@ XML node, an <code>xs:anyURI</code>, or a string.</para>
 
 <para>Consider the following grammar:</para>
 
-<programlisting>S: A ; B .
-A: 'a', X .
-B: 'b', Y .
-X: 'x' .
-Z: 'z' .</programlisting>
+<programlisting language="ixml">
+<xi:include href="../../test/resources/messy.ixml" parse="text"/>
+</programlisting>
 
 <para>It contains unused and undefined nonterminals.</para>
 
@@ -368,9 +350,9 @@ both allowed in the same options map.
 <varlistentry>
 <term><code>type</code>, string</term>
 <listitem>
-<para>The input type. One of “<literal>ixml</literal>” (an invisible XML grammar),
-“<literal>xml</literal>” or “<literal>vxml</literal>” (a visible XML grammar),
-or “<literal>cxml</literal>” or “<literal>compiled</literal>” (a compiled
+<para>The input type. One of <literal>ixml</literal> (an invisible XML grammar),
+<literal>xml</literal> or <literal>vxml</literal> (a visible XML grammar),
+or <literal>cxml</literal> or <literal>compiled</literal> (a compiled
 XML grammar).
 </para>
 <para>In most circumstances, you don’t need to specify the input type.</para>
@@ -379,9 +361,9 @@ XML grammar).
 <varlistentry>
 <term><code>format</code>, string</term>
 <listitem>
-<para>The output type. One of “<literal>xml</literal>” (an XML node; the default),
-“<literal>json</literal>” or “<literal>json-data</literal>” (a “data” map),
-or “<literal>json-text</literal>” (a “text” map).
+<para>The output type. One of <literal>xml</literal> (an XML node; the default),
+<literal>json</literal> or <literal>json-data</literal> (a “data” map),
+or <literal>json-text</literal> (a “text” map).
 </para>
 </listitem>
 </varlistentry>
@@ -482,8 +464,8 @@ used in the parse.
 <varlistentry>
 <term><code>parser</code>, string</term>
 <listitem>
-<para>Selects the parser type, “<code>Earley</code>” for the Earley parser
-and “<code>GLL</code>” for the GLL parser. The Earley parser is the default.
+<para>Selects the parser type, <code>Earley</code> for the Earley parser
+and <code>GLL</code> for the GLL parser. The Earley parser is the default.
 </para>
 </listitem>
 </varlistentry>
@@ -580,6 +562,13 @@ supported character classes.</para>
 <title>Change log</title>
 
 <revhistory>
+<revision>
+  <revnumber>1.99.14</revnumber>
+  <date>2023-04-11</date>
+  <revdescription>
+    <para>Testing the new CI automation</para>
+  </revdescription>
+</revision>
 <revision>
   <revnumber>1.1.0</revnumber>
   <date>2022-04-17</date>

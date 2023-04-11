@@ -8,8 +8,7 @@ buildscript {
   configurations.all {
     resolutionStrategy {
       force 'xml-apis:xml-apis:1.4.01',
-        "${saxonGroup}:${saxonEdition}:${saxonVersion}",
-        'com.nwalsh:sinclude:4.0.0'
+        "${saxonGroup}:${saxonEdition}:${saxonVersion}"
     }
   }
 
@@ -24,10 +23,10 @@ plugins {
   id "java"
   id "maven-publish"
   id "signing"
-  id 'com.github.gmazzo.buildconfig' version "3.0.3"
-  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.9.4'
-  id 'com.nwalsh.gradle.relaxng.validate' version '0.0.8'
-  id 'com.nwalsh.gradle.docker.container' version '0.0.3'
+  id 'com.github.gmazzo.buildconfig' version "3.1.0"
+  id 'com.nwalsh.gradle.saxon.saxon-gradle' version '0.10.5'
+  id 'com.nwalsh.gradle.relaxng.validate' version '0.10.3'
+  id 'com.nwalsh.gradle.docker.container' version '0.0.5'
 }
 
 import com.nwalsh.gradle.saxon.SaxonXsltTask
@@ -46,8 +45,7 @@ repositories {
 configurations.all {
   resolutionStrategy {
     force 'xml-apis:xml-apis:1.4.01',
-      "${saxonGroup}:${saxonEdition}:${saxonVersion}",
-      'com.nwalsh:sinclude:4.0.0'
+      "${saxonGroup}:${saxonEdition}:${saxonVersion}"
   }
 }
 
@@ -87,10 +85,6 @@ buildConfig {
 
 ext {
   c_coffeesacks = "coffeesacks"
-}
-
-saxon.configure {
-  initializer 'org.docbook.xsltng.extensions.Register'
 }
 
 docker_container.configure {
@@ -173,47 +167,24 @@ tasks.withType(JavaCompile) {
 
 // ============================================================
 
-task manual_xinclude(type: SaxonXsltTask, dependsOn: ["copyResources"]) {
+task website(type: SaxonXsltTask, dependsOn: ["copyResources", "javadoc"]) {
+  inputs.files fileTree(dir: "${projectDir}/tools", include: "*.xsl")
   inputs.files fileTree(dir: "${projectDir}/src/website/xml")
-  inputs.file "${projectDir}/website/xinclude.xsl"
-
-  input "${projectDir}/src/website/xml/coffeesacks.xml"
-  stylesheet "${projectDir}/website/xinclude.xsl"
-  output "${buildDir}/tmp/coffeesacks.xml"
-}
-
-task manual_validate(type: RelaxNGValidateTask, dependsOn: ["manual_xinclude"]) {
-  input manual_xinclude.outputs.files.singleFile
-  output "${buildDir}/xml/coffeesacks.xml"
-  schema "${projectDir}/website/docbook.rnc"
-  compact true
-}
-
-task manual_augment(type: SaxonXsltTask, dependsOn: ["manual_validate"]) {
-  input manual_validate.outputs.files.singleFile
-  output "${buildDir}/aug/coffeesacks.xml"
-  stylesheet "${projectDir}/tools/augment.xsl"
-  parameters (
-    'version': sacksVersion,
-    'coffeegrinder-version': grinderVersion,
-    'coffeefilter-version': filterVersion
-  )
-}
-
-task website(type: SaxonXsltTask, dependsOn: ["manual_augment", "javadoc"]) {
-  inputs.file "${projectDir}/tools/docbook.xsl"
-  inputs.file "${projectDir}/tools/xpath.xsl"
   outputs.files fileTree(dir: "${buildDir}/website")
 
-  input manual_augment.outputs.files.singleFile
+  input "${projectDir}/src/website/xml/coffeesacks.xml"
   output "${buildDir}/website/index.html"
   stylesheet "${projectDir}/tools/docbook.xsl"
-  initializer 'org.docbook.xsltng.extensions.Register'
+  args(['-init:org.docbook.xsltng.extensions.Register'])
   parameters (
+    'relax-ng-grammar': "${projectDir}/website/docbook.rng",
     'mediaobject-input-base-uri': "file:${buildDir}/aug/",
     'mediaobject-output-base-uri': "/",
     'chunk': 'index.html',
-    'chunk-output-base-uri': "${projectDir}/build/website/"
+    'chunk-output-base-uri': "${projectDir}/build/website/",
+    'coffeesacks-version': sacksVersion,
+    'coffeegrinder-version': grinderVersion,
+    'coffeefilter-version': filterVersion
   )
 }
 

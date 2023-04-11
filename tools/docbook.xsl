@@ -16,16 +16,29 @@
 <xsl:import href="../website/docbook.xsl"/>
 <xsl:import href="xpath.xsl"/>
 
+<xsl:param name="coffeesacks-version" as="xs:string" required="yes"/>
+<xsl:param name="coffeefilter-version" as="xs:string" required="yes"/>
+<xsl:param name="coffeegrinder-version" as="xs:string" required="yes"/>
+
 <!-- ============================================================ -->
+
+<xsl:param name="verbatim-trim-leading-blank-lines" select="'true'"/>
+
+<!-- ============================================================ -->
+
 <xsl:template match="db:productname" mode="m:titlepage"
               expand-text="yes">
   <div class="versions">
-    <p class="app">CoffeeSacks version {../db:productnumber/string()}</p>
+    <p class="app">
+      <xsl:apply-templates mode="m:titlepage"/>
+      <xsl:text> version </xsl:text>
+      <xsl:apply-templates select="../db:productnumber/node()"/>
+    </p>
     <p class="lib">
       <xsl:text>(Based on CoffeeGrinder </xsl:text>
-      <xsl:sequence select="../db:bibliomisc[@role='coffeegrinder']/string()"/>
+      <xsl:apply-templates select="../db:bibliomisc[@role='coffeegrinder']/node()"/>
       <xsl:text> and CoffeeFilter </xsl:text>
-      <xsl:sequence select="../db:bibliomisc[@role='coffeefilter']/string()"/>
+      <xsl:apply-templates select="../db:bibliomisc[@role='coffeefilter']/node()"/>
       <xsl:text>.)</xsl:text>
     </p>
   </div>
@@ -44,6 +57,20 @@
   <div class="funcsynopsis">
     <xsl:apply-templates select="." mode="m:xpath"/>
   </div>
+</xsl:template>
+
+<!-- ============================================================ -->
+
+<xsl:template match="processing-instruction('coffeesacks-version')">
+  <xsl:value-of select="$coffeesacks-version"/>
+</xsl:template>
+
+<xsl:template match="processing-instruction('coffeefilter-version')">
+  <xsl:value-of select="$coffeefilter-version"/>
+</xsl:template>
+
+<xsl:template match="processing-instruction('coffeegrinder-version')">
+  <xsl:value-of select="$coffeegrinder-version"/>
 </xsl:template>
 
 </xsl:stylesheet>
