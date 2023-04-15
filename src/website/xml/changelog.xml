@@ -1,0 +1,52 @@
+<appendix xmlns="http://docbook.org/ns/docbook"
+          xmlns:xi='http://www.w3.org/2001/XInclude'
+          xmlns:xlink="http://www.w3.org/1999/xlink"
+          xml:id="changelog"
+          version="5.2">
+<title>Change log</title>
+
+<revhistory>
+<revision>
+  <revnumber>2.0.3</revnumber>
+  <date>2023-04-15</date>
+  <revdescription>
+    <itemizedlist>
+      <listitem>
+        <para>If a UTF-8 grammar or input file begins with a byte-order-mark (BOM), the
+        BOM is ignored. Set the “ignore BOM” option to
+        <literal>false</literal> to disable this behavior.</para>
+      </listitem>
+      <listitem>
+        <para>Updated to use CoffeeFilter version 2.0.3 which supports ignoring the BOM
+        and fixes errors in the serialization fo control characters (that’s not actually
+        relevant to CoffeeSacks which doesn’t serialize the results).
+        </para>
+      </listitem>
+      <listitem>
+        <para>The build system has been updated to use Gradle version 8.0.2.</para>
+      </listitem>
+    </itemizedlist>
+  </revdescription>
+</revision>
+
+<revision>
+  <revnumber>2.0.0</revnumber>
+  <date>2023-04-11</date>
+  <revdescription>
+    <para>Making the 2.x code base the current release.</para>
+  </revdescription>
+</revision>
+<revision>
+  <revnumber>1.1.0</revnumber>
+  <date>2022-04-17</date>
+  <revdescription>
+    <para>Support for the 15 April 2022 specification, version 1.1.0</para>
+  </revdescription>
+</revision>
+<revision>
+  <revnumber>1.0.0</revnumber>
+  <date>2022-03-20</date>
+  <revremark>Initial release, version 1.0.0</revremark>
+</revision>
+</revhistory>
+</appendix>
