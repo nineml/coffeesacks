@@ -63,4 +63,5 @@ jobs:
         run: |
           git submodule init
           git submodule update
-          ./gradlew dist website
+          ./gradlew -PsaxonVersion=11.5 dist
+          ./gradlew -PsaxonVersion=12.1 clean dist website
