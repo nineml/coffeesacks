@@ -32,6 +32,7 @@ plugins {
 import com.nwalsh.gradle.saxon.SaxonXsltTask
 import com.nwalsh.gradle.relaxng.validate.RelaxNGValidateTask
 import com.nwalsh.gradle.docker.DockerContainer
+import net.sf.saxon.s9api.Processor
 
 sourceCompatibility = "1.8"
 targetCompatibility = "1.8"
@@ -76,6 +77,7 @@ dependencies {
 }
 
 println("Building with Java version ${System.getProperty('java.version')}")
+println("Building with Saxon version ${new Processor(false).getSaxonProductVersion()}")
 
 buildConfig {
   packageName('org.nineml.coffeesacks')
