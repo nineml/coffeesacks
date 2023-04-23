@@ -7,6 +7,14 @@
 
 <revhistory>
 <revision>
+  <revnumber>2.1.0</revnumber>
+  <date>2023-04-23</date>
+  <revdescription>
+    <para>Added <link linkend="choose-alternative">support</link>
+    for providing a function to choose among alternative parses.</para>
+  </revdescription>
+</revision>
+<revision>
   <revnumber>2.0.3</revnumber>
   <date>2023-04-15</date>
   <revdescription>
