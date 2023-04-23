@@ -27,12 +27,6 @@
     catch(err) {
     }
 //-->
-var data = {"i0":10};
-var tabs = {65535:["t0","All Methods"],2:["t2","Instance Methods"],8:["t4","Concrete Methods"]};
-var altColor = "altColor";
-var rowColor = "rowColor";
-var tableTab = "tableTab";
-var activeTableTab = "activeTableTab";
 var pathtoroot = "../../../";
 var useModuleDirectories = true;
 loadScripts(document, 'script');</script>
@@ -96,7 +90,7 @@ loadScripts(document, 'script');</script>
 <li>Detail:&nbsp;</li>
 <li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
-<li><a href="#method.detail">Method</a></li>
+<li>Method</li>
 </ul>
 </div>
 <a id="skip.navbar.top">
@@ -239,7 +233,22 @@ extends net.sf.saxon.trans.XPathException</pre>
 </tr>
 <tr class="altColor">
 <td class="colFirst"><code>static java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#ERR_INVALID_CHOOSE_FUNCTION">ERR_INVALID_CHOOSE_FUNCTION</a></span></code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
 <th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#ERR_INVALID_GRAMMAR">ERR_INVALID_GRAMMAR</a></span></code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="altColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#ERR_NAMESPACE_CONSTRUCTION">ERR_NAMESPACE_CONSTRUCTION</a></span></code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<td class="colFirst"><code>static java.lang.String</code></td>
+<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#ERR_TREE_CONSTRUCTION">ERR_TREE_CONSTRUCTION</a></span></code></th>
 <td class="colLast">&nbsp;</td>
 </tr>
 </table>
@@ -258,6 +267,17 @@ extends net.sf.saxon.trans.XPathException</pre>
 <tr>
 <th class="colFirst" scope="col">Constructor</th>
 <th class="colLast" scope="col">Description</th>
+</tr>
+<tr class="altColor">
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,java.lang.String)">CoffeeSacksException</a></span>&#8203;(java.lang.String&nbsp;errCode,
+                    java.lang.String&nbsp;message)</code></th>
+<td class="colLast">&nbsp;</td>
+</tr>
+<tr class="rowColor">
+<th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,java.lang.String,java.lang.Throwable)">CoffeeSacksException</a></span>&#8203;(java.lang.String&nbsp;errCode,
+                    java.lang.String&nbsp;message,
+                    java.lang.Throwable&nbsp;cause)</code></th>
+<td class="colLast">&nbsp;</td>
 </tr>
 <tr class="altColor">
 <th class="colConstructorName" scope="row"><code><span class="memberNameLink"><a href="#%3Cinit%3E(java.lang.String,java.lang.String,net.sf.saxon.s9api.Location)">CoffeeSacksException</a></span>&#8203;(java.lang.String&nbsp;errCode,
@@ -283,19 +303,6 @@ extends net.sf.saxon.trans.XPathException</pre>
 <!--   -->
 </a>
 <h3>Method Summary</h3>
-<table class="memberSummary">
-<caption><span id="t0" class="activeTableTab"><span>All Methods</span><span class="tabEnd">&nbsp;</span></span><span id="t2" class="tableTab"><span><a href="javascript:show(2);">Instance Methods</a></span><span class="tabEnd">&nbsp;</span></span><span id="t4" class="tableTab"><span><a href="javascript:show(8);">Concrete Methods</a></span><span class="tabEnd">&nbsp;</span></span></caption>
-<tr>
-<th class="colFirst" scope="col">Modifier and Type</th>
-<th class="colSecond" scope="col">Method</th>
-<th class="colLast" scope="col">Description</th>
-</tr>
-<tr id="i0" class="altColor">
-<td class="colFirst"><code>java.lang.String</code></td>
-<th class="colSecond" scope="row"><code><span class="memberNameLink"><a href="#getMessage()">getMessage</a></span>()</code></th>
-<td class="colLast">&nbsp;</td>
-</tr>
-</table>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.net.sf.saxon.trans.XPathException">
 <!--   -->
@@ -315,7 +322,7 @@ extends net.sf.saxon.trans.XPathException</pre>
 <!--   -->
 </a>
 <h3>Methods inherited from class&nbsp;java.lang.Throwable</h3>
-<code>addSuppressed, fillInStackTrace, getLocalizedMessage, getStackTrace, getSuppressed, setStackTrace, toString</code></li>
+<code>addSuppressed, fillInStackTrace, getLocalizedMessage, getMessage, getStackTrace, getSuppressed, setStackTrace, toString</code></li>
 </ul>
 <ul class="blockList">
 <li class="blockList"><a id="methods.inherited.from.class.java.lang.Object">
@@ -447,13 +454,52 @@ extends net.sf.saxon.trans.XPathException</pre>
 <a id="ERR_BAD_OUTPUT_FORMAT">
 <!--   -->
 </a>
-<ul class="blockListLast">
+<ul class="blockList">
 <li class="blockList">
 <h4>ERR_BAD_OUTPUT_FORMAT</h4>
 <pre>public static final&nbsp;java.lang.String ERR_BAD_OUTPUT_FORMAT</pre>
 <dl>
 <dt><span class="seeLabel">See Also:</span></dt>
 <dd><a href="../../../constant-values.html#org.nineml.coffeesacks.CoffeeSacksException.ERR_BAD_OUTPUT_FORMAT">Constant Field Values</a></dd>
+</dl>
+</li>
+</ul>
+<a id="ERR_INVALID_CHOOSE_FUNCTION">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>ERR_INVALID_CHOOSE_FUNCTION</h4>
+<pre>public static final&nbsp;java.lang.String ERR_INVALID_CHOOSE_FUNCTION</pre>
+<dl>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="../../../constant-values.html#org.nineml.coffeesacks.CoffeeSacksException.ERR_INVALID_CHOOSE_FUNCTION">Constant Field Values</a></dd>
+</dl>
+</li>
+</ul>
+<a id="ERR_TREE_CONSTRUCTION">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>ERR_TREE_CONSTRUCTION</h4>
+<pre>public static final&nbsp;java.lang.String ERR_TREE_CONSTRUCTION</pre>
+<dl>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="../../../constant-values.html#org.nineml.coffeesacks.CoffeeSacksException.ERR_TREE_CONSTRUCTION">Constant Field Values</a></dd>
+</dl>
+</li>
+</ul>
+<a id="ERR_NAMESPACE_CONSTRUCTION">
+<!--   -->
+</a>
+<ul class="blockListLast">
+<li class="blockList">
+<h4>ERR_NAMESPACE_CONSTRUCTION</h4>
+<pre>public static final&nbsp;java.lang.String ERR_NAMESPACE_CONSTRUCTION</pre>
+<dl>
+<dt><span class="seeLabel">See Also:</span></dt>
+<dd><a href="../../../constant-values.html#org.nineml.coffeesacks.CoffeeSacksException.ERR_NAMESPACE_CONSTRUCTION">Constant Field Values</a></dd>
 </dl>
 </li>
 </ul>
@@ -467,6 +513,16 @@ extends net.sf.saxon.trans.XPathException</pre>
 <!--   -->
 </a>
 <h3>Constructor Detail</h3>
+<a id="&lt;init&gt;(java.lang.String,java.lang.String)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>CoffeeSacksException</h4>
+<pre>public&nbsp;CoffeeSacksException&#8203;(java.lang.String&nbsp;errCode,
+                            java.lang.String&nbsp;message)</pre>
+</li>
+</ul>
 <a id="&lt;init&gt;(java.lang.String,java.lang.String,net.sf.saxon.s9api.Location)">
 <!--   -->
 </a>
@@ -476,6 +532,17 @@ extends net.sf.saxon.trans.XPathException</pre>
 <pre>public&nbsp;CoffeeSacksException&#8203;(java.lang.String&nbsp;errCode,
                             java.lang.String&nbsp;message,
                             net.sf.saxon.s9api.Location&nbsp;location)</pre>
+</li>
+</ul>
+<a id="&lt;init&gt;(java.lang.String,java.lang.String,java.lang.Throwable)">
+<!--   -->
+</a>
+<ul class="blockList">
+<li class="blockList">
+<h4>CoffeeSacksException</h4>
+<pre>public&nbsp;CoffeeSacksException&#8203;(java.lang.String&nbsp;errCode,
+                            java.lang.String&nbsp;message,
+                            java.lang.Throwable&nbsp;cause)</pre>
 </li>
 </ul>
 <a id="&lt;init&gt;(java.lang.String,java.lang.String,net.sf.saxon.s9api.Location,net.sf.saxon.om.Sequence)">
@@ -488,29 +555,6 @@ extends net.sf.saxon.trans.XPathException</pre>
                             java.lang.String&nbsp;message,
                             net.sf.saxon.s9api.Location&nbsp;location,
                             net.sf.saxon.om.Sequence&nbsp;value)</pre>
-</li>
-</ul>
-</li>
-</ul>
-</section>
-<!-- ============ METHOD DETAIL ========== -->
-<section>
-<ul class="blockList">
-<li class="blockList"><a id="method.detail">
-<!--   -->
-</a>
-<h3>Method Detail</h3>
-<a id="getMessage()">
-<!--   -->
-</a>
-<ul class="blockListLast">
-<li class="blockList">
-<h4>getMessage</h4>
-<pre class="methodSignature">public&nbsp;java.lang.String&nbsp;getMessage()</pre>
-<dl>
-<dt><span class="overrideSpecifyLabel">Overrides:</span></dt>
-<dd><code>getMessage</code>&nbsp;in class&nbsp;<code>java.lang.Throwable</code></dd>
-</dl>
 </li>
 </ul>
 </li>
@@ -572,7 +616,7 @@ extends net.sf.saxon.trans.XPathException</pre>
 <li>Detail:&nbsp;</li>
 <li><a href="#field.detail">Field</a>&nbsp;|&nbsp;</li>
 <li><a href="#constructor.detail">Constr</a>&nbsp;|&nbsp;</li>
-<li><a href="#method.detail">Method</a></li>
+<li>Method</li>
 </ul>
 </div>
 <a id="skip.navbar.bottom">
