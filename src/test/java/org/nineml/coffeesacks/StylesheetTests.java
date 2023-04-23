@@ -96,4 +96,33 @@ public class StylesheetTests extends TestConfiguration {
         Assertions.assertTrue(report.contains("[\"Z\"]"));
         Assertions.assertTrue(report.contains("\"unproductive\":"));
     }
+
+    @Test
+    public void resolveAmbiguityFunctionXml() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/ambiguity-xml.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc><s xmlns:ixml=\"http://invisiblexml.org/NS\" ixml:state=\"ambiguous\"><n>123</n></s></doc>", serialize(result));
+    }
+
+    @Test
+    public void resolveAmbiguityFunctionRootXml() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/root-ambiguity-xml.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc><s xmlns:ixml=\"http://invisiblexml.org/NS\" ixml:state=\"ambiguous\"><b>a</b></s></doc>", serialize(result));
+    }
+
+    @Test
+    public void resolveAmbiguityFunctionNumbers() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/numbers.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertTrue(serialize(result).contains("<decimal>"));
+    }
+
+    @Test
+    public void resolveAmbiguityFunctionJson() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/ambiguity-json.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc>{ \"s\":{ \"ixml:state\":\"ambiguous\", \"n\":123 } }</doc>", serialize(result));
+    }
+
 }
