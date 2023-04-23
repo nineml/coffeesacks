@@ -4,6 +4,7 @@ import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.Expression;
 import net.sf.saxon.expr.StaticContext;
 import net.sf.saxon.expr.XPathContext;
+import net.sf.saxon.functions.hof.UserFunctionReference;
 import net.sf.saxon.lib.ExtensionFunctionCall;
 import net.sf.saxon.ma.map.MapItem;
 import net.sf.saxon.om.Item;
@@ -17,6 +18,7 @@ import org.nineml.coffeefilter.InvisibleXmlParser;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Map;
 
 public class LoadGrammar extends CommonDefinition {
     private static final StructuredQName qName =
@@ -67,17 +69,23 @@ public class LoadGrammar extends CommonDefinition {
 
         @Override
         public Sequence call(XPathContext context, Sequence[] sequences) throws XPathException {
-            HashMap<String, String> options;
+            UserFunctionReference.BoundUserFunction chooseAlternative = null;
+            HashMap<String, String> options = new HashMap<>();
             if (sequences.length > 1) {
                 Item item = sequences[1].head();
                 if (item instanceof MapItem) {
-                    options = parseMap((MapItem) item);
+                    Map<String,Object> parsedMap = parseMap((MapItem) item);
+                    for (Map.Entry<String,Object> entry : parsedMap.entrySet()) {
+                        if ("choose-alternative".equals(entry.getKey())) {
+                            chooseAlternative = (UserFunctionReference.BoundUserFunction) entry.getValue();
+                        } else {
+                            options.put(entry.getKey(), (String) entry.getValue());
+                        }
+                    }
                     checkOptions(options);
                 } else {
                     throw new CoffeeSacksException(CoffeeSacksException.ERR_BAD_OPTIONS, "Options must be a map", sourceLoc);
                 }
-            } else {
-                options = new HashMap<>();
             }
 
             Sequence input = sequences[0].head();
@@ -98,7 +106,7 @@ public class LoadGrammar extends CommonDefinition {
                 grammarURI = URIUtils.resolve(URIUtils.cwd(), grammarHref);
             }
             parser = parserFromURI(context, grammarURI, options);
-            return functionFromParser(context, parser, options);
+            return functionFromParser(context, parser, chooseAlternative, options);
         }
     }
 }

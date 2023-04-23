@@ -4,6 +4,7 @@ import net.sf.saxon.Configuration;
 import net.sf.saxon.expr.Callable;
 import net.sf.saxon.expr.XPathContext;
 import net.sf.saxon.functions.CallableFunction;
+import net.sf.saxon.functions.hof.UserFunctionReference;
 import net.sf.saxon.lib.ExtensionFunctionDefinition;
 import net.sf.saxon.ma.map.MapItem;
 import net.sf.saxon.om.Item;
@@ -12,6 +13,7 @@ import net.sf.saxon.om.Sequence;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.AtomicIterator;
+import net.sf.saxon.type.BuiltInAtomicType;
 import net.sf.saxon.type.FunctionItemType;
 import net.sf.saxon.type.SpecificFunctionType;
 import net.sf.saxon.value.AnyURIValue;
@@ -26,15 +28,12 @@ import org.nineml.coffeefilter.trees.DataTree;
 import org.nineml.coffeefilter.trees.DataTreeBuilder;
 import org.nineml.coffeefilter.trees.SimpleTree;
 import org.nineml.coffeefilter.trees.SimpleTreeBuilder;
-import org.nineml.coffeegrinder.parser.HygieneReport;
 import org.xml.sax.InputSource;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -42,7 +41,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -157,7 +155,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         return parser;
     }
 
-    protected Sequence functionFromParser(XPathContext context, InvisibleXmlParser parser, Map<String,String> options) throws XPathException {
+    protected Sequence functionFromParser(XPathContext context, InvisibleXmlParser parser, UserFunctionReference.BoundUserFunction chooseAlternative, Map<String, String> options) throws XPathException {
         if (parser.constructed()) {
             net.sf.saxon.value.SequenceType[] argTypes = new net.sf.saxon.value.SequenceType[]{net.sf.saxon.value.SequenceType.SINGLE_STRING};
 
@@ -168,7 +166,14 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 ftype = new SpecificFunctionType(argTypes, SequenceType.SINGLE_ITEM);
             }
 
-            return new CallableFunction(1, new InvisibleXmlParserFunction(parser, options), ftype);
+            if (chooseAlternative != null) {
+                FunctionItemType ctype = chooseAlternative.getFunctionItemType();
+                if (ctype.getResultType().getPrimaryType() != BuiltInAtomicType.INTEGER) {
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_CHOOSE_FUNCTION, "The choose-alternative function must return an xs:integer");
+                }
+            }
+
+            return new CallableFunction(1, new InvisibleXmlParserFunction(parser, chooseAlternative, options), ftype);
         } else {
             try {
                 InvisibleXmlDocument failed = parser.getFailedParse();
@@ -185,8 +190,8 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         }
     }
 
-    protected HashMap<String,String> parseMap(MapItem item) throws XPathException {
-        HashMap<String,String> options = new HashMap<>();
+    protected HashMap<String,Object> parseMap(MapItem item) throws XPathException {
+        HashMap<String,Object> options = new HashMap<>();
 
         // The implementation of the keyValuePairs() method is incompatible between Saxon 10 and Saxon 11.
         // In order to avoid having to publish two versions of this class, we use reflection to
@@ -197,8 +202,14 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
             AtomicIterator aiter = (AtomicIterator) keys.invoke(item);
             AtomicValue next = aiter.next();
             while (next != null) {
-                AtomicValue value = (AtomicValue) get.invoke(item, next);
-                options.put(next.getStringValue(), value.getStringValue());
+                String key = next.getStringValue();
+                if ("choose-alternative".equals(key)) {
+                    UserFunctionReference.BoundUserFunction ref = (UserFunctionReference.BoundUserFunction) get.invoke(item, next);
+                    options.put(key, ref);
+                } else {
+                    AtomicValue value = (AtomicValue) get.invoke(item, next);
+                    options.put(key, value.getStringValue());
+                }
                 next = aiter.next();
             }
         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
@@ -315,10 +326,12 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
     private class InvisibleXmlParserFunction implements Callable {
         private final InvisibleXmlParser parser;
+        private final UserFunctionReference.BoundUserFunction chooseAlternative;
         private final Map<String,String> options;
 
-        public InvisibleXmlParserFunction(InvisibleXmlParser parser, Map<String,String> options) {
+        public InvisibleXmlParserFunction(InvisibleXmlParser parser, UserFunctionReference.BoundUserFunction chooseAlternative, Map<String, String> options) {
             this.parser = parser;
+            this.chooseAlternative = chooseAlternative;
             this.options = options;
         }
 
@@ -331,10 +344,16 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 Processor processor = (Processor) context.getConfiguration().getProcessor();
                 InvisibleXmlDocument document = parser.parse(input);
 
+                AlternativeEventBuilder altBuilder = new AlternativeEventBuilder(processor, parser.getIxmlVersion(), parser.getOptions());
+                altBuilder.setChooseAlternative(context, chooseAlternative);
+
                 if ("xml".equals(format)) {
                     DocumentBuilder builder = processor.newDocumentBuilder();
                     BuildingContentHandler handler = builder.newBuildingContentHandler();
-                    document.getTree(handler);
+
+                    altBuilder.setHandler(handler);
+
+                    document.getTree(altBuilder);
                     return handler.getDocumentNode().getUnderlyingNode();
                 }
 
@@ -343,12 +362,18 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 newOptions.setAssertValidXmlNames(false);
                 if ("json-tree".equals(format) || "json-text".equals(format)) {
                     SimpleTreeBuilder builder = new SimpleTreeBuilder(newOptions);
-                    document.getTree(builder);
+
+                    altBuilder.setHandler(builder);
+
+                    document.getTree(altBuilder);
                     SimpleTree tree = builder.getTree();
                     json = tree.asJSON();
                 } else {
                     DataTreeBuilder builder = new DataTreeBuilder(newOptions);
-                    document.getTree(builder);
+
+                    altBuilder.setHandler(builder);
+
+                    document.getTree(altBuilder);
                     DataTree tree = builder.getTree();
                     json = tree.asJSON();
                 }

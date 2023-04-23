@@ -1,0 +1,242 @@
+<chapter xmlns="http://docbook.org/ns/docbook"
+         xmlns:xi='http://www.w3.org/2001/XInclude'
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xml:id="choose-alternative"
+         version="5.2">
+<title>Choosing among alternatives</title>
+
+<para>Where it’s practical to write a grammar that is unambiguous,
+that’s best. But it isn’t always practical. Sometimes it’s difficult,
+and sometimes it’s impossible. If the data is actually ambiguous, you
+may have to reflect that in your grammar.</para>
+
+<para>Invisible XML doesn’t consider ambiguity an error, but it also
+doesn’t provide any mechanism for controlling it. All parses are
+considered equal and the processor’s only obligation is to provide one
+of them.</para>
+
+<para>That may not suit your needs. CoffeeSacks provides a way to
+examine the alternatives and select one. You can supply a
+<code>choose-alternative</code> function in the parser options. This
+must be a function that takes a single argument, a list of elements,
+and returns an integer.</para>
+
+<para>The function must return an integer between 0 and the number of
+alternatives provided. The number is the alternative selected. A value
+of 0 indicates that the function did not select an alternative. The
+implementation may then go on to try other methods for selecting an
+alternative.</para>
+
+<para>This function always selects the first alternative:</para>
+
+<programlisting language="xml"><![CDATA[<xsl:function name="f:first" as="xs:integer">
+  <xsl:param name="alts" as="element()+"/>
+  <xsl:sequence select="1"/>
+</xsl:function>]]></programlisting>
+
+<para>You could pass it in parse options like this:</para>
+
+<programlisting language="xml"><![CDATA[<xsl:variable name="parser"
+              select="cs:make-parser($grammar,
+                      map{'choose-alternative': f:first#1})"/>]]></programlisting>
+
+<para>Of course, unconditionally choosing the first option isn’t very
+interesting. To explore further, consider this simple, ambiguous
+grammar:</para>
+
+<programlisting language="ixml"> number-list: (number, -#a)+, number? .
+-number: hex | decimal .
+ hex: hex-digit+ .
+ decimal: decimal-digit+ .
+-hex-digit: ["0"-"9" | "a"-"f" | "A"-"F" ] .
+-decimal-digit: ["0"-"9" ] .</programlisting>
+
+<para>If we parse the following input,</para>
+
+<programlisting>bad
+cafe
+42</programlisting>
+
+<para>We might get this result:</para>
+
+<programlisting language="xml"><![CDATA[<number-list xmlns:ixml="http://invisiblexml.org/NS" ixml:state="ambiguous">
+  <hex>bad</hex>
+  <hex>cafe</hex>
+  <hex>42</hex>
+</number-list>]]></programlisting>
+
+<para>Of course, we might equally get this result:</para>
+
+<programlisting language="xml"><![CDATA[<number-list xmlns:ixml="http://invisiblexml.org/NS" ixml:state="ambiguous">
+  <hex>bad</hex>
+  <hex>cafe</hex>
+  <decimal>42</decimal>
+</number-list>]]></programlisting>
+
+<para>The ambiguity here is between “decimal” and “hexidecimal”.
+Here’s a function that will always select the decimal alternative:
+</para>
+
+<programlisting language="xml"><![CDATA[<xsl:function name="f:choose-alternative" as="xs:integer">
+  <xsl:param name="alternatives" as="element()+"/>
+  <xsl:sequence select="$alternatives[decimal]/@alternative"/>
+</xsl:function>]]></programlisting>
+
+<para>In order to understand how this works, we need to look at what’s
+passed to the function. The function get’s an XML description of the
+current state of the parse, where each element in the list represents
+an alternative. For the grammar and input above, what’s passed to the function is
+a sequence of two elements:</para>
+
+<programlisting language="xml"><![CDATA[(<number alternative="1" name="number" from="9" to="11" mark="-">
+   <hex name="hex" from="9" to="11" mark="^">
+     <a:nonterminal name="$2_hex-digit-plus" mark="-">…</a:nonterminal>
+   </hex>
+ </number>,
+ <number alternative="2" name="number" from="9" to="11" mark="-">
+   <decimal name="decimal" from="9" to="11" mark="^">
+     <a:nonterminal name="$3_decimal-digit-plus" mark="-">…</a:nonterminal>
+   </decimal>
+ </number>)]]></programlisting>
+
+<para>Each alternative is identified with its number, name, the range of tokens it covers, and its mark.
+The content of each alternative is the sequence of literals and nonterminals that are the
+“right hand side” of this alternative. For example, the first alternative above includes:</para>
+
+<programlistingco>
+<areaspec>
+<area xml:id="alt_alt" coords="1 50"/>
+<areaset xml:id="alt_name">
+  <area coords="2 50"/>
+  <area coords="5 60"/>
+</areaset>
+<areaset xml:id="alt_range">
+  <area coords="3 50"/>
+  <area coords="6 60"/>
+</areaset>
+<areaset xml:id="alt_mark">
+  <area coords="4 50"/>
+  <area coords="7 60"/>
+  <area coords="9 60"/>
+</areaset>
+<area xml:id="alt_ntname" coords="8 50"/>
+<area xml:id="alt_content" coords="10 50"/>
+</areaspec>
+<programlisting language="xml"><![CDATA[<number alternative="1"
+        name="number"
+        from="9" to="11"
+        mark="-">
+   <hex name="hex"
+        from="9" to="11"
+        mark="^">
+      <a:nonterminal name="$2_hex-digit-plus"
+                     mark="-">
+        …
+      </a:nonterminal>
+   </hex>
+</number>]]></programlisting>
+</programlistingco>
+
+<calloutlist>
+<callout arearefs="alt_alt">
+<para>The alternatives are numbered. Return this number to select this alternative.
+The sequence of alternatives is also ordered by alternative number.</para>
+</callout>
+<callout arearefs="alt_name">
+<para>The name of the nonterminal is provided. The name is always provided in an attribute
+for convenience in the case where the element in the tree and the nonterminal have different
+names (see <link linkend="alt_ntname"/>).</para>
+</callout>
+<callout arearefs="alt_range">
+<para>This is the range of characters (tokens) in the input covered by this nonterminal.</para>
+</callout>
+<callout arearefs="alt_mark">
+<para>This is the mark associated with the nonterminal.</para>
+</callout>
+<callout arearefs="alt_ntname">
+<para>When the nonterminal has been created by the parser, the element name and the
+nonterminal name are different. See <xref linkend="grammar-details"/>.</para>
+</callout>
+<callout arearefs="alt_content">
+<para>An ellipsis appears where content will appear “further down” in the tree.</para>
+</callout>
+</calloutlist>
+
+<para>The sequence of nodes passed to the function are the
+alternatives, but that isn’t the whole story.
+The alternatives will include additional context if they are not
+the root of the result tree. For example, the whole tree associated with the
+first alternative in this case is:</para>
+
+<programlisting language="xml">&lt;number-list xmlns:a="https://nineml.org/ns/describe-ambiguity"
+             a:version="1.0"
+             name="number-list"
+             mark="^"&gt;
+   &lt;number name="number"/&gt;
+   &lt;number name="number"/&gt;
+   &lt;number alternative="1" name="number" from="9" to="11" mark="^"&gt;
+      &lt;hex name="hex" from="9" to="11" mark="^"&gt;
+         &lt;a:nonterminal name="$2_hex-digit-plus" mark="-"&gt;…&lt;/a:nonterminal&gt;
+      &lt;/hex&gt;
+   &lt;/number&gt;
+&lt;/number-list&gt;</programlisting>
+
+<para>The context includes all of the ancestors of the point where a
+choice must be made and the number of preceding siblings. Preceding
+siblings are identified simply by name.</para>
+
+<para>This example doesn’t include any matched literal tokens, but if they are present,
+they are wrapped in <tag>a:literal</tag> elements.</para>
+
+<para>Which aspects of the context (if any) are relevant is going to
+depend on your grammar and the input.</para>
+
+<section xml:id="grammar-details">
+<title>Grammar details</title>
+
+<para>Invisible XML is an example of an
+<link xlink:href="https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form">extended
+Backus-Naur form</link> (EBNF) grammar. The underlying parsing technlogies, either Earley or GLL, operate
+on simple <link xlink:href="https://en.wikipedia.org/wiki/Backus%E2%80%93Naur_form">Backus-Naur
+form</link> (BNF) grammars. What that means in practice is that the first thing
+<link xlink:href="https://coffeegrinder.nineml.org">CoffeeGrinder</link> does to your Invisible
+XML grammar is
+<link xlink:href="https://github.com/invisibleXML/ixml/blob/master/misc/ebnf-to-bnf.md">convert it</link>
+into a plain BNF. That process introduces new nonterminals.</para>
+
+<para>Mostly this is a behind-the-scenes transformation that isn’t
+relevant to the user, but it’s inescapable when describing ambiguity.
+Ultimately, the ambiguity is in the BNF and that’s the only grammar
+that the parser can describe.</para>
+
+<para>The oddly named nonterminals seen above come from the fact that
+our iXML grammar has been transformed into this BNF:</para>
+
+<programlisting>                   $$ ::= number-list
+          number-list ::= $1_number-plus, $4_number-optionⁿ
+               number ::= hex
+               number ::= decimal
+                  hex ::= $2_hex-digit-plus
+              decimal ::= $3_decimal-digit-plus
+            hex-digit ::= ['0'-'9'; 'a'-'f'; 'A'-'F']
+        decimal-digit ::= ['0'-'9']
+       $1_number-plus ::= number, #A
+       $1_number-plus ::= number, #A, $1_number-plus
+    $2_hex-digit-plus ::= hex-digit
+    $2_hex-digit-plus ::= hex-digit, $2_hex-digit-plus
+$3_decimal-digit-plus ::= decimal-digit
+$3_decimal-digit-plus ::= decimal-digit, $3_decimal-digit-plus
+    $4_number-optionⁿ ::= ε
+    $4_number-optionⁿ ::= number</programlisting>
+
+<para>This grammar is simpler in the sense that the rules for matching
+tokens in the input are simpler. There are no repetitions,
+alternatives, or other features on the “right hand side” of each production.</para>
+
+<para>It appears more complicated partly because there are more
+productions and there can be multiple productions for any given
+nonterminal. It also appears more complicated because it’s impossible
+to generate semantically meaningful names for the new nonterminals introduced.</para>
+
+</section>
+</chapter>

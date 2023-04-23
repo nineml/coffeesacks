@@ -18,26 +18,42 @@ public class CoffeeSacksException extends XPathException {
     public static final String ERR_BAD_OPTIONS = "CSER0002";
     public static final String ERR_BAD_INPUT_FORMAT = "CSER0003";
     public static final String ERR_BAD_OUTPUT_FORMAT = "CSER0004";
+    public static final String ERR_INVALID_CHOOSE_FUNCTION = "CSIF0001";
+    public static final String ERR_TREE_CONSTRUCTION = "CSIN0001";
+    public static final String ERR_NAMESPACE_CONSTRUCTION = "CSIN0002";
 
-    private final String message;
+    public CoffeeSacksException(String errCode, String message) {
+        super(message);
+        configure(errCode, message, null, null);
+    }
 
     public CoffeeSacksException(String errCode, String message, Location location) {
-        this(errCode, message, location, null);
+        super(message);
+        configure(errCode, message, location, null);
+    }
+
+    public CoffeeSacksException(String errCode, String message, Throwable cause) {
+        super(message, cause);
+        configure(errCode, message, null, null);
     }
 
     public CoffeeSacksException(String errCode, String message, Location location, Sequence value) {
         super(message);
-        this.message = message;
+        configure(errCode, message, location, value);
+    }
+
+    private CoffeeSacksException(String errCode, String message, Location location, Throwable cause) {
+        super(message, cause);
+        configure(errCode, message, location, null);
+    }
+
+    private void configure(String errCode, String message, Location location, Sequence value) {
         setErrorCodeQName(new StructuredQName(COFFEE_SACKS_ERROR_PREFIX, COFFEE_SACKS_ERROR_NAMESPACE, errCode));
         if (value != null) {
             setErrorObject(value);
         }
-        setLocation(location);
+        if (location != null) {
+            setLocation(location);
+        }
     }
-
-    @Override
-    public String getMessage() {
-        return message;
-    }
-
 }
