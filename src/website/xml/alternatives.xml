@@ -21,6 +21,14 @@ examine the alternatives and select one. You can supply a
 must be a function that takes a single argument, a list of elements,
 and returns an integer.</para>
 
+<note>
+<para>More than one approach to resolving ambiguity may be applied. For example,
+CoffeeFilter supports a “priority” pragma that lets the grammar author identify
+a preferred resolution. When the <code>choose-alternative</code> function is called,
+the first element in the list is always the currently selected alternative, if some
+previous process has been applied.</para>
+</note>
+
 <para>The function must return an integer between 0 and the number of
 alternatives provided. The number is the alternative selected. A value
 of 0 indicates that the function did not select an alternative. The
