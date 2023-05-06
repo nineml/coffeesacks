@@ -41,10 +41,26 @@ public class AlternativeEventBuilder extends EventBuilder {
     }
 
     @Override
-    public int startAlternative(ForestNode tree, List<RuleChoice> alternatives) {
-        int selected = super.startAlternative(tree, alternatives);
+    public int startAlternative(ForestNode tree, List<RuleChoice> ruleAlternatives) {
+        int selected = super.startAlternative(tree, ruleAlternatives);
 
         if (chooseAlternatives != null) {
+            // Reorder the alternatives so that the selected choice is always first
+            final List<RuleChoice> alternatives;
+            if (selected == 0) {
+                alternatives = ruleAlternatives;
+            } else {
+                alternatives = new ArrayList<>();
+                alternatives.add(ruleAlternatives.get(selected));
+                int count = 0;
+                for (RuleChoice alt : ruleAlternatives) {
+                    if (count != selected) {
+                        alternatives.add(alt);
+                    }
+                    count++;
+                }
+            }
+
             try {
                 List<XdmNode> xmlAlternatives = xmlAlternatives(tree, alternatives);
                 ArrayList<NodeInfo> nodeAlternatives = new ArrayList<>();
