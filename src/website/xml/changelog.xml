@@ -7,6 +7,15 @@
 
 <revhistory>
 <revision>
+  <revnumber>2.2.0</revnumber>
+  <date>2023-05-06</date>
+  <revdescription>
+    <para>Updated the way the <link linkend="choose-alternative">choose alternative</link>
+    function is called to assure that the first element in the list is always the
+    current “best” choice.</para>
+  </revdescription>
+</revision>
+<revision>
   <revnumber>2.1.0</revnumber>
   <date>2023-04-23</date>
   <revdescription>

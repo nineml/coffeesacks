@@ -41,10 +41,26 @@ public class AlternativeEventBuilder extends EventBuilder {
     }
 
     @Override
-    public int startAlternative(ForestNode tree, List<RuleChoice> alternatives) {
-        int selected = super.startAlternative(tree, alternatives);
+    public int startAlternative(ForestNode tree, List<RuleChoice> ruleAlternatives) {
+        int selected = super.startAlternative(tree, ruleAlternatives);
 
         if (chooseAlternatives != null) {
+            // Reorder the alternatives so that the selected choice is always first
+            final List<RuleChoice> alternatives;
+            if (selected == 0) {
+                alternatives = ruleAlternatives;
+            } else {
+                alternatives = new ArrayList<>();
+                alternatives.add(ruleAlternatives.get(selected));
+                int count = 0;
+                for (RuleChoice alt : ruleAlternatives) {
+                    if (count != selected) {
+                        alternatives.add(alt);
+                    }
+                    count++;
+                }
+            }
+
             try {
                 List<XdmNode> xmlAlternatives = xmlAlternatives(tree, alternatives);
                 ArrayList<NodeInfo> nodeAlternatives = new ArrayList<>();
@@ -55,11 +71,15 @@ public class AlternativeEventBuilder extends EventBuilder {
 
                 // I checked the return type when I loaded the function, so I think this is safe
                 long value = ((Int64Value) result.head()).longValue();
-                if (value != 0) {
+                if (value != 0 && value != 1) { // 1 is the same as 0
                     if (value < 0 || value > alternatives.size()) {
                         throw new IllegalArgumentException("Value out of range from choose-alternatives function");
                     }
-                    return ((int) value) - 1;
+
+                    value--; // convert back to 0-based index
+
+                    // Map the number back to the "right" number in the un-reordered list
+                    return ((int) (value <= selected ? value - 1 : value));
                 }
             } catch (XPathException err) {
                 throw new RuntimeException(err);
