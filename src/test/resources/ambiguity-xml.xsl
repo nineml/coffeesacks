@@ -22,8 +22,9 @@
 <xsl:function name="f:choose" as="xs:integer">
   <xsl:param name="alternatives" as="element()+"/>
   <!-- select the alternative that contains only a single 'n' -->
-  <!--<xsl:message select="$alternatives/root()!serialize(.,map{'method':'xml','indent':true()})"/>-->
-  <xsl:sequence select="$alternatives[count(*) = 1][1]/@alternative/data()"/>
+  <!-- <xsl:message select="$alternatives/root()!serialize(.,map{'method':'xml','indent':true()})"/> -->
+  <xsl:sequence
+      select="$alternatives[count(.//n) = 1 and .//n/@from = 0 and .//n/@to = 3]/@alternative/data()"/>
 </xsl:function>
 
 </xsl:stylesheet>
