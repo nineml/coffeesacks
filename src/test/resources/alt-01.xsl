@@ -12,21 +12,21 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:variable name="grammar" select="'s: n+ . n: [''0''-''9'']+ .'"/>
+  <xsl:variable name="grammar" select="'
+    S = A, ''y'' | B, -''y'' .
+    A = ''x'' .
+    B = ''x'' .
+  '"/>
   <xsl:variable name="parser"
-                select="cs:make-parser($grammar, map{'choose-alternative': f:choose#1,
-                                                     'format': 'json'})"/>
+                select="cs:make-parser($grammar, map{'choose-alternative': f:choose#1})"/>
   <doc>
-    <xsl:sequence select="serialize($parser('123'), map{'method':'json','indent':true()})"/>
+    <xsl:sequence select="$parser('xy')"/>
   </doc>
 </xsl:template>
 
 <xsl:function name="f:choose" as="xs:integer">
   <xsl:param name="alternatives" as="element()+"/>
-  <!-- select the alternative that contains only a single 'n' -->
-  <!--<xsl:message select="$alternatives[1]!serialize(.,map{'method':'xml','indent':true()})"/>-->
-  <xsl:sequence
-      select="$alternatives[count(.//n) = 1 and .//n/@from = 0 and .//n/@to = 3]/@alternative/data()"/>
+  <xsl:sequence select="$alternatives[*/*:literal[@mark='-']]/@alternative"/>
 </xsl:function>
 
 </xsl:stylesheet>

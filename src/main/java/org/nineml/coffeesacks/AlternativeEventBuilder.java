@@ -171,6 +171,14 @@ public class AlternativeEventBuilder extends EventBuilder {
             } else {
                 if (left != null) {
                     // Left and right side
+
+                    if (left.leftExtent > right.leftExtent) {
+                        // The other way around
+                        ForestNode temp = left;
+                        left = right;
+                        right = temp;
+                    }
+
                     if (left.state == null) {
                         HashMap<String,XdmAtomicValue> attributes = new HashMap<>();
                         attributes.put("from", new XdmAtomicValue(left.leftExtent));

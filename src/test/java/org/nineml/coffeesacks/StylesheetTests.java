@@ -125,4 +125,10 @@ public class StylesheetTests extends TestConfiguration {
         Assert.assertEquals("<doc>{ \"s\":{ \"ixml:state\":\"ambiguous\", \"n\":123 } }</doc>", serialize(result));
     }
 
+    @Test
+    public void alternativeChoice01() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/alt-01.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertTrue(serialize(result).contains("<B>"));
+    }
 }
