@@ -7,6 +7,17 @@
 
 <revhistory>
 <revision>
+  <revnumber>2.2.1</revnumber>
+  <date>2023-05-17</date>
+  <revdescription>
+    <para>Further refined the way XML is constructed for choosing alternatives. The
+    “left” and “right” sides of each alternative are now sorted so that the “left” alternative
+    always matches input tokens that precede the “right” alternative. The CoffeeGrinder update
+    also assures that the attributes associated with nonterminal symbols are correct.
+    </para>
+  </revdescription>
+</revision>
+<revision>
   <revnumber>2.2.0</revnumber>
   <date>2023-05-06</date>
   <revdescription>
