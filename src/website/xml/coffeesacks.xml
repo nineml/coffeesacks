@@ -348,14 +348,31 @@ both allowed in the same options map.
 
 <variablelist>
 <varlistentry>
-<term><code>type</code>, string</term>
+<term><code>choose-alternative</code>, function</term>
 <listitem>
-<para>The input type. One of <literal>ixml</literal> (an invisible XML grammar),
-<literal>xml</literal> or <literal>vxml</literal> (a visible XML grammar),
-or <literal>cxml</literal> or <literal>compiled</literal> (a compiled
-XML grammar).
+<para>A function that will be called to choose between
+alternatives when the parse is ambiguous. The function
+must have one argument, a sequence of elements, and must return
+an <type>xs:integer</type>. See <xref linkend="choose-alternative"/>.
 </para>
-<para>In most circumstances, you don’t need to specify the input type.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>disablePragmas</code>, string</term>
+<listitem>
+<para>Pragmas to disable. The string may be a comma-separated list of pragma names,
+or the string <code>#all</code> to disable all pragmas.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>enablePragmas</code>, string</term>
+<listitem>
+<para>Pragmas to enable. The string may be a comma-separated list of pragma names,
+or the string <code>#all</code> to enable all pragmas.</para>
+<para>By default, all pragmas are enabled. If both the <code>disablePragmas</code>
+and <code>enablePragmas</code> options are supplied, they will be processed in that order.
+(If you want to enable only a single pragma, you can disable them all, then enable the
+one you want.)</para>
 </listitem>
 </varlistentry>
 <varlistentry>
@@ -368,13 +385,14 @@ or <literal>json-text</literal> (a “text” map).
 </listitem>
 </varlistentry>
 <varlistentry>
-<term><code>choose-alternative</code>, function</term>
+<term><code>type</code>, string</term>
 <listitem>
-<para>A function that will be called to choose between
-alternatives when the parse is ambiguous. The function
-must have one argument, a sequence of elements, and must return
-an <type>xs:integer</type>. See <xref linkend="choose-alternative"/>.
+<para>The input type. One of <literal>ixml</literal> (an invisible XML grammar),
+<literal>xml</literal> or <literal>vxml</literal> (a visible XML grammar),
+or <literal>cxml</literal> or <literal>compiled</literal> (a compiled
+XML grammar).
 </para>
+<para>In most circumstances, you don’t need to specify the input type.</para>
 </listitem>
 </varlistentry>
 </variablelist>
@@ -387,10 +405,75 @@ an <type>xs:integer</type>. See <xref linkend="choose-alternative"/>.
 
 <variablelist>
 <varlistentry>
+<term><code>allowMultipleDefinitions</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+multiple definitions for a given nonterminal.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>allowUndefinedSymbols</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+undefined symbols.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>allowUnproductiveSymbols</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+unproductive symbols.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>allowUnreachableSymbols</code>, boolean</term>
+<listitem>
+<para>If true, the parser will attempt to use a grammar that contains
+unreachable symbols.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
 <term><code>ignoreTrailingWhitespace</code>, boolean</term>
 <listitem>
 <para>If true, trailing whitespace on the document input string is
 ignored.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>parser</code>, string</term>
+<listitem>
+<para>Selects the parser type, <code>Earley</code> for the Earley parser
+and <code>GLL</code> for the GLL parser. The Earley parser is the default.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>showBnfNonterminals</code>, boolean</term>
+<listitem>
+<para>If true, the parser will return all of the otherwise hidden nonterminals
+used in the parse.
+</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>showMarks</code>, boolean</term>
+<listitem>
+<para>If true, the parser will return all of the nonterminals in your
+grammar as elements, irrespective of their marks. The actual mark will
+be returned in an <code>ixml:mark</code> attribute.</para>
+</listitem>
+</varlistentry>
+<varlistentry>
+<term><code>strictAmbiguity</code>, boolean</term>
+<listitem>
+<para>If true, the parser will mark a result ambiguous even if a user-defined
+function was used to select alternatives. By default, if a user-defined function was
+called, the choice is considered unambiguous.
 </para>
 </listitem>
 </varlistentry>
@@ -412,70 +495,6 @@ Invisible XML mandates that an
 <tag class="attribute">ixml:state</tag> attribute be added to the root
 element contining the value <code>prefix</code>. If this option
 is true, that state will be suppressed.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>allowUndefinedSymbols</code>, boolean</term>
-<listitem>
-<para>If true, the parser will attempt to use a grammar that contains
-undefined symbols.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>allowUnreachableSymbols</code>, boolean</term>
-<listitem>
-<para>If true, the parser will attempt to use a grammar that contains
-unreachable symbols.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>allowUnproductiveSymbols</code>, boolean</term>
-<listitem>
-<para>If true, the parser will attempt to use a grammar that contains
-unproductive symbols.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>allowMultipleDefinitions</code>, boolean</term>
-<listitem>
-<para>If true, the parser will attempt to use a grammar that contains
-multiple definitions for a given nonterminal.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>allowMultipleDefinitions</code>, boolean</term>
-<listitem>
-<para>If true, the parser will attempt to use a grammar that contains
-multiple definitions for a given nonterminal.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>showMarks</code>, boolean</term>
-<listitem>
-<para>If true, the parser will return all of the nonterminals in your
-grammar as elements, irrespective of their marks. The actual mark will
-be returned in an <code>ixml:mark</code> attribute.</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>showBnfNonterminals</code>, boolean</term>
-<listitem>
-<para>If true, the parser will return all of the otherwise hidden nonterminals
-used in the parse.
-</para>
-</listitem>
-</varlistentry>
-<varlistentry>
-<term><code>parser</code>, string</term>
-<listitem>
-<para>Selects the parser type, <code>Earley</code> for the Earley parser
-and <code>GLL</code> for the GLL parser. The Earley parser is the default.
 </para>
 </listitem>
 </varlistentry>
