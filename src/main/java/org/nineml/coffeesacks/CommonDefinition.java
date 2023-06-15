@@ -223,7 +223,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         Set<String> booleanOptions = new HashSet<>(Arrays.asList("ignoreTrailingWhitespace",
                 "allowUndefinedSymbols", "allowUnreachableSymbols", "allowUnproductiveSymobls",
                 "allowMultipleDefinitions", "showMarks", "showBnfNonterminals",
-                "suppressAmbiguousState", "suppressPrefixState"));
+                "suppressAmbiguousState", "suppressPrefixState", "strictAmbiguity"));
 
         //Set<String> stringOptions = new HashSet<>(Collections.singletonList("parser"));
 
@@ -268,6 +268,9 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                         parserOptions.exposeState("prefix");
                     }
                     break;
+                case "strictAmbiguity":
+                    parserOptions.setStrictAmbiguity(bool);
+                    break;
                 case "allowUndefinedSymbols":
                     parserOptions.setAllowUndefinedSymbols(bool);
                     break;
@@ -290,6 +293,11 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                     parserOptions.setParserType(value);
                     break;
 
+                case "enablePragmas":
+                case "disablePragmas":
+                    // See below
+                    break;
+
                 case "format":
                     Set<String> formats = new HashSet<>(Arrays.asList("xml", "json", "json-data", "json-tree", "json-text"));
                     if (!formats.contains(value)) {
@@ -308,6 +316,18 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                     break;
                 default:
                     parserOptions.getLogger().warn(logcategory, "Ignoring unexpected option: %s", key);
+            }
+        }
+
+        // Disable first, then enable
+        if (options.containsKey("disablePragmas")) {
+            for (String name : options.get("disablePragmas").split(",")) {
+                parserOptions.disablePragma(name.trim());
+            }
+        }
+        if (options.containsKey("enablePragmas")) {
+            for (String name : options.get("enablePragmas").split(",")) {
+                parserOptions.enablePragma(name.trim());
             }
         }
     }

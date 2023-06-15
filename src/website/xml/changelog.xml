@@ -7,6 +7,32 @@
 
 <revhistory>
 <revision>
+  <revnumber>2.2.3</revnumber>
+  <date>2023-06-15</date>
+  <revdescription>
+    <itemizedlist>
+    <listitem>
+    <para>If a user-supplied function is called to choose an alternative, assume an
+    <emphasis>unambiguous</emphasis> choice has always been made.
+    Support the <literal>strictAmbiguity</literal> option to override this behavior.
+    </para>
+    </listitem>
+    <listitem>
+    <para>Support the <code>disablePragmas</code> and <code>enablePragmas</code> options
+    to selectively disable or enable individual pragma types.
+    </para>
+    </listitem>
+    </itemizedlist>
+  </revdescription>
+</revision>
+<revision>
+  <revnumber>2.2.2</revnumber>
+  <date>2023-06-15</date>
+  <revdescription>
+    <para>Never released.</para>
+  </revdescription>
+</revision>
+<revision>
   <revnumber>2.2.1</revnumber>
   <date>2023-05-17</date>
   <revdescription>

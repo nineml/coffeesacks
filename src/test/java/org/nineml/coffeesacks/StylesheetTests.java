@@ -101,12 +101,19 @@ public class StylesheetTests extends TestConfiguration {
     public void resolveAmbiguityFunctionXml() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/ambiguity-xml.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
-        Assert.assertEquals("<doc><s xmlns:ixml=\"http://invisiblexml.org/NS\" ixml:state=\"ambiguous\"><n>123</n></s></doc>", serialize(result));
+        Assert.assertEquals("<doc><s><n>123</n></s></doc>", serialize(result));
     }
 
     @Test
     public void resolveAmbiguityFunctionRootXml() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/root-ambiguity-xml.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc><s><b>a</b></s></doc>", serialize(result));
+    }
+
+    @Test
+    public void resolveAmbiguityStrictFunctionRootXml() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/root-ambiguity-strict-xml.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
         Assert.assertEquals("<doc><s xmlns:ixml=\"http://invisiblexml.org/NS\" ixml:state=\"ambiguous\"><b>a</b></s></doc>", serialize(result));
     }
@@ -122,6 +129,13 @@ public class StylesheetTests extends TestConfiguration {
     public void resolveAmbiguityFunctionJson() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/ambiguity-json.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
+        Assert.assertEquals("<doc>{ \"s\":{ \"n\":123 } }</doc>", serialize(result));
+    }
+
+    @Test
+    public void resolveAmbiguityStrictFunctionJson() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/ambiguity-strict-json.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
         Assert.assertEquals("<doc>{ \"s\":{ \"ixml:state\":\"ambiguous\", \"n\":123 } }</doc>", serialize(result));
     }
 
@@ -130,5 +144,6 @@ public class StylesheetTests extends TestConfiguration {
         XdmNode stylesheet = loadStylesheet("src/test/resources/alt-01.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
         Assert.assertTrue(serialize(result).contains("<B>"));
+        Assert.assertFalse(serialize(result).contains("ambiguous"));
     }
 }

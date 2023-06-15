@@ -12,20 +12,20 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:variable name="parser" select="cs:load-grammar('numbers.ixml',
-                                      map{'choose-alternative': f:choose#1})"/>
+  <xsl:variable name="grammar" select="'s = a | b. a = ''a''. b = ''a''.'"/>
+  <xsl:variable name="parser" select="cs:make-parser($grammar,
+                                      map{'strictAmbiguity': true(),
+                                          'choose-alternative': f:choose#1})"/>
   <doc>
-    <xsl:sequence select="$parser(unparsed-text('numbers.txt'))"/>
+    <xsl:sequence select="$parser('a')"/>
   </doc>
 </xsl:template>
 
 <xsl:function name="f:choose" as="xs:integer">
   <xsl:param name="alternatives" as="element()+"/>
-  <!-- select the alternative that contains 'decimal' -->
-  <!--
-  <xsl:message select="$alternatives/root()!serialize(.,map{'method':'xml','indent':true()})"/>
-  -->
-  <xsl:sequence select="$alternatives[decimal]/@alternative"/>
+  <!-- select the alternative that contains only a single 'n' -->
+  <!--<xsl:message select="$alternatives/root()!serialize(.,map{'method':'xml','indent':true()})"/>-->
+  <xsl:sequence select="$alternatives[b]/@alternative"/>
 </xsl:function>
 
 </xsl:stylesheet>
