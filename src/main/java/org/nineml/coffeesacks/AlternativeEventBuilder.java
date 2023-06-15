@@ -78,6 +78,9 @@ public class AlternativeEventBuilder extends EventBuilder {
 
                     value--; // convert back to 0-based index
 
+                    // If we called an extension function to choose, assume the selection was unambiguous
+                    madeAmbiguousChoice = false;
+
                     // Map the number back to the "right" number in the un-reordered list
                     return ((int) (value <= selected ? value - 1 : value));
                 }
