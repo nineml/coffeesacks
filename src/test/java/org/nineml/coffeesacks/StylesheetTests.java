@@ -130,5 +130,6 @@ public class StylesheetTests extends TestConfiguration {
         XdmNode stylesheet = loadStylesheet("src/test/resources/alt-01.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
         Assert.assertTrue(serialize(result).contains("<B>"));
+        Assert.assertFalse(serialize(result).contains("ambiguous"));
     }
 }
