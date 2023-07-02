@@ -69,6 +69,7 @@ public class StylesheetTests extends TestConfiguration {
     public void hygieneOutputTransformFail() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/hygienefail.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
+        String xml = serialize(result);
         Assert.assertEquals("<doc>FAILED</doc>", serialize(result));
     }
 
@@ -146,4 +147,31 @@ public class StylesheetTests extends TestConfiguration {
         Assert.assertTrue(serialize(result).contains("<B>"));
         Assert.assertFalse(serialize(result).contains("ambiguous"));
     }
+
+    @Test
+    public void horiz1() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/horiz1.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        String xml = serialize(result);
+        Assert.assertTrue(xml.contains("<B>"));
+        Assert.assertFalse(xml.contains("ambiguous"));
+    }
+
+    @Test
+    public void horiz2() {
+        XdmNode stylesheet = loadStylesheet("src/test/resources/horiz2.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        String xml = serialize(result);
+        Assert.assertTrue(xml.contains("<A>"));
+        Assert.assertTrue(xml.contains("ambiguous"));
+    }
+
+    @Test
+    public void numbers() {
+        XdmNode stylesheet = loadStylesheet("src/website/xml/decimal.xsl");
+        XdmNode result = transform(stylesheet, stylesheet);
+        String xml = serialize(result);
+        Assert.assertTrue(xml.contains("<decimal>42"));
+    }
+
 }

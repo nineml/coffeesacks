@@ -12,22 +12,18 @@
 <xsl:mode on-no-match="shallow-copy"/>
 
 <xsl:template match="/">
-  <xsl:variable name="grammar" select="'s: n+ . n: [''0''-''9'']+ .'"/>
-  <xsl:variable name="parser"
-                select="cs:make-parser($grammar, map{'choose-alternative': f:choose#2,
-                                                     'format': 'json'})"/>
+  <xsl:variable name="parser" select="cs:load-grammar('horiz2.ixml',
+                                      map {'choose-alternative': f:choose#2 })"/>
   <doc>
-    <xsl:sequence select="serialize($parser('123'), map{'method':'json','indent':true()})"/>
+    <xsl:sequence select="$parser('a')"/>
   </doc>
 </xsl:template>
 
 <xsl:function name="f:choose" as="map(*)">
   <xsl:param name="context" as="element()"/>
   <xsl:param name="options" as="map(*)"/>
-
-  <!-- select the alternative that contains only a single 'n' -->
-  <xsl:variable name="id" select="$context/children[count(symbol)=1]/@id/string()"/>
-  <xsl:sequence select="map{'selection':$id}"/>
+  <xsl:sequence select="map { 'selection': $options?available-choices[1],
+                              'ambiguous-choice': true() }"/>
 </xsl:function>
 
 </xsl:stylesheet>

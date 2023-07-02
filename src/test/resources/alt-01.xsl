@@ -18,15 +18,19 @@
     B = ''x'' .
   '"/>
   <xsl:variable name="parser"
-                select="cs:make-parser($grammar, map{'choose-alternative': f:choose#1})"/>
+                select="cs:make-parser($grammar, map{'choose-alternative': f:choose#2})"/>
   <doc>
     <xsl:sequence select="$parser('xy')"/>
   </doc>
 </xsl:template>
 
-<xsl:function name="f:choose" as="xs:integer">
-  <xsl:param name="alternatives" as="element()+"/>
-  <xsl:sequence select="$alternatives[*/*:literal[@mark='-']]/@alternative"/>
+<xsl:function name="f:choose" as="map(*)">
+  <xsl:param name="context" as="element()"/>
+  <xsl:param name="options" as="map(*)"/>
+
+  <!-- select B -->
+  <xsl:variable name="id" select="$context/children[symbol[@name='B']]/@id/string()"/>
+  <xsl:sequence select="map{'selection':$id}"/>
 </xsl:function>
 
 </xsl:stylesheet>

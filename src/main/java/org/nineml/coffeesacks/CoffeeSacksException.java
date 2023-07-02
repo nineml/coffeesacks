@@ -19,6 +19,7 @@ public class CoffeeSacksException extends XPathException {
     public static final String ERR_BAD_INPUT_FORMAT = "CSER0003";
     public static final String ERR_BAD_OUTPUT_FORMAT = "CSER0004";
     public static final String ERR_INVALID_CHOOSE_FUNCTION = "CSIF0001";
+    public static final String ERR_INVALID_CHOICE = "CSIF0002";
     public static final String ERR_TREE_CONSTRUCTION = "CSIN0001";
     public static final String ERR_NAMESPACE_CONSTRUCTION = "CSIN0002";
 

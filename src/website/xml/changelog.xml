@@ -7,6 +7,22 @@
 
 <revhistory>
 <revision>
+<revnumber>3.0.0a</revnumber>
+<date>2023-07-02</date>
+<revdescription>
+<para>This is a beta release for version 3.0.0. There are a lot of
+underlying changes in this release.</para>
+<orderedlist>
+<listitem><para>Includes all of the updates in CoffeeGrinder and CoffeeFilter 3.0.0a.
+</para></listitem>
+<listitem><para>The API for <link linkend="choose-alternative">writing a selection function</link> has
+completely changed.
+</para></listitem>
+</orderedlist>
+</revdescription>
+</revision>
+
+<revision>
   <revnumber>2.2.3</revnumber>
   <date>2023-06-15</date>
   <revdescription>
