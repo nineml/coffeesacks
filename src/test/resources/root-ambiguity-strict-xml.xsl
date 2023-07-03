@@ -15,17 +15,19 @@
   <xsl:variable name="grammar" select="'s = a | b. a = ''a''. b = ''a''.'"/>
   <xsl:variable name="parser" select="cs:make-parser($grammar,
                                       map{'strictAmbiguity': true(),
-                                          'choose-alternative': f:choose#1})"/>
+                                          'choose-alternative': f:choose#2})"/>
   <doc>
     <xsl:sequence select="$parser('a')"/>
   </doc>
 </xsl:template>
 
-<xsl:function name="f:choose" as="xs:integer">
-  <xsl:param name="alternatives" as="element()+"/>
-  <!-- select the alternative that contains only a single 'n' -->
-  <!--<xsl:message select="$alternatives/root()!serialize(.,map{'method':'xml','indent':true()})"/>-->
-  <xsl:sequence select="$alternatives[b]/@alternative"/>
+<xsl:function name="f:choose" as="map(*)">
+  <xsl:param name="context" as="element()"/>
+  <xsl:param name="options" as="map(*)"/>
+
+  <!-- select b -->
+  <xsl:variable name="id" select="$context/children[symbol[@name='b']]/@id/string()"/>
+  <xsl:sequence select="map{'selection':$id}"/>
 </xsl:function>
 
 </xsl:stylesheet>

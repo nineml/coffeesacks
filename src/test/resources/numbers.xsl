@@ -13,19 +13,19 @@
 
 <xsl:template match="/">
   <xsl:variable name="parser" select="cs:load-grammar('numbers.ixml',
-                                      map{'choose-alternative': f:choose#1})"/>
+                                      map{'choose-alternative': f:choose#2})"/>
   <doc>
     <xsl:sequence select="$parser(unparsed-text('numbers.txt'))"/>
   </doc>
 </xsl:template>
 
-<xsl:function name="f:choose" as="xs:integer">
-  <xsl:param name="alternatives" as="element()+"/>
+<xsl:function name="f:choose" as="map(*)">
+  <xsl:param name="context" as="element()"/>
+  <xsl:param name="options" as="map(*)"/>
+
   <!-- select the alternative that contains 'decimal' -->
-  <!--
-  <xsl:message select="$alternatives/root()!serialize(.,map{'method':'xml','indent':true()})"/>
-  -->
-  <xsl:sequence select="$alternatives[decimal]/@alternative"/>
+  <xsl:variable name="id" select="$context/children[symbol[@name='decimal']]/@id/string()"/>
+  <xsl:sequence select="map{'selection':$id}"/>
 </xsl:function>
 
 </xsl:stylesheet>

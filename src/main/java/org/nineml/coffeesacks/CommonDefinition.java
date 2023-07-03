@@ -7,15 +7,17 @@ import net.sf.saxon.functions.CallableFunction;
 import net.sf.saxon.functions.hof.UserFunctionReference;
 import net.sf.saxon.lib.ExtensionFunctionDefinition;
 import net.sf.saxon.ma.map.MapItem;
+import net.sf.saxon.ma.map.MapType;
 import net.sf.saxon.om.Item;
 import net.sf.saxon.om.NodeInfo;
 import net.sf.saxon.om.Sequence;
+import net.sf.saxon.pattern.NodeKindTest;
 import net.sf.saxon.s9api.*;
 import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.AtomicIterator;
-import net.sf.saxon.type.BuiltInAtomicType;
 import net.sf.saxon.type.FunctionItemType;
 import net.sf.saxon.type.SpecificFunctionType;
+import net.sf.saxon.type.Type;
 import net.sf.saxon.value.AnyURIValue;
 import net.sf.saxon.value.AtomicValue;
 import net.sf.saxon.value.SequenceType;
@@ -29,6 +31,7 @@ import org.nineml.coffeefilter.trees.DataTreeBuilder;
 import org.nineml.coffeefilter.trees.SimpleTree;
 import org.nineml.coffeefilter.trees.SimpleTreeBuilder;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import javax.xml.transform.sax.SAXSource;
 import java.io.ByteArrayInputStream;
@@ -40,11 +43,7 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Superclass for the CoffeeSacks functions containing some common definitions.
@@ -103,8 +102,6 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                     parser = invisibleXml.getParserFromIxml(conn.getInputStream(), encoding);
                 } else if ("xml".equals(grammarType) || "vxml".equals(grammarType)) {
                     parser = invisibleXml.getParserFromVxml(conn.getInputStream(), grammarURI.toString());
-                } else if ("cxml".equals(grammarType) || "compiled".equals(grammarType)) {
-                    parser = invisibleXml.getParserFromCxml(conn.getInputStream(), grammarURI.toString());
                 } else {
                     throw new IllegalArgumentException("Unexpected grammar type: " + grammarType);
                 }
@@ -157,7 +154,7 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
     protected Sequence functionFromParser(XPathContext context, InvisibleXmlParser parser, UserFunctionReference.BoundUserFunction chooseAlternative, Map<String, String> options) throws XPathException {
         if (parser.constructed()) {
-            net.sf.saxon.value.SequenceType[] argTypes = new net.sf.saxon.value.SequenceType[]{net.sf.saxon.value.SequenceType.SINGLE_STRING};
+            SequenceType[] argTypes = new SequenceType[]{SequenceType.SINGLE_STRING};
 
             final FunctionItemType ftype;
             if ("xml".equals(options.getOrDefault(_format, "xml"))) {
@@ -168,8 +165,17 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
 
             if (chooseAlternative != null) {
                 FunctionItemType ctype = chooseAlternative.getFunctionItemType();
-                if (ctype.getResultType().getPrimaryType() != BuiltInAtomicType.INTEGER) {
-                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_CHOOSE_FUNCTION, "The choose-alternative function must return an xs:integer");
+                if (ctype.getResultType().getPrimaryType() != MapType.ANY_MAP_TYPE) {
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_CHOOSE_FUNCTION, "The choose-alternative function must return a map");
+                }
+                if (ctype.getArgumentTypes().length != 2) {
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_CHOOSE_FUNCTION, "The choose-alternative function must have two arguments");
+                }
+                if (ctype.getArgumentTypes()[0].getPrimaryType() != NodeKindTest.ELEMENT) {
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_CHOOSE_FUNCTION, "The first argument to the choose-alternative function must be an element");
+                }
+                if (ctype.getArgumentTypes()[1].getPrimaryType() != MapType.ANY_MAP_TYPE) {
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_CHOOSE_FUNCTION, "The second argument to the choose-alternative function must be a map");
                 }
             }
 
@@ -177,13 +183,19 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
         } else {
             try {
                 InvisibleXmlDocument failed = parser.getFailedParse();
-                ByteArrayInputStream bais = new ByteArrayInputStream(failed.getTree().getBytes(StandardCharsets.UTF_8));
-                SAXSource source = new SAXSource(new InputSource(bais));
-                Processor processor = (Processor) context.getConfiguration().getProcessor();
-                DocumentBuilder builder = processor.newDocumentBuilder();
-                XdmNode errdoc = builder.build(source);
-                throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_GRAMMAR, "Failed to parse grammar",
-                        sourceLoc, errdoc.getUnderlyingNode());
+                if (failed.getResult().succeeded()) {
+                    // we never even tried to parse apparently
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_GRAMMAR, "Failed to parse grammar",
+                            sourceLoc, new XdmAtomicValue(parser.getException().getMessage()).getUnderlyingValue());
+                } else {
+                    ByteArrayInputStream bais = new ByteArrayInputStream(failed.getTree().getBytes(StandardCharsets.UTF_8));
+                    SAXSource source = new SAXSource(new InputSource(bais));
+                    Processor processor = (Processor) context.getConfiguration().getProcessor();
+                    DocumentBuilder builder = processor.newDocumentBuilder();
+                    XdmNode errdoc = builder.build(source);
+                    throw new CoffeeSacksException(CoffeeSacksException.ERR_INVALID_GRAMMAR, "Failed to parse grammar",
+                            sourceLoc, errdoc.getUnderlyingNode());
+                }
             } catch (SaxonApiException ex) {
                 throw new XPathException(ex);
             }
@@ -364,16 +376,21 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 Processor processor = (Processor) context.getConfiguration().getProcessor();
                 InvisibleXmlDocument document = parser.parse(input);
 
-                AlternativeEventBuilder altBuilder = new AlternativeEventBuilder(processor, parser.getIxmlVersion(), parser.getOptions());
-                altBuilder.setChooseAlternative(context, chooseAlternative);
+                final XmlForest forest;
+                try {
+                    forest = new XmlForest(processor, document);
+                } catch (SaxonApiException | SAXException ex) {
+                    throw new XPathException(ex);
+                }
+
+                XPathTreeSelector selector = new XPathTreeSelector(processor, parser, forest, input);
+                selector.setChooseFunction(context, chooseAlternative);
+                document.setTreeSelector(selector);
 
                 if ("xml".equals(format)) {
                     DocumentBuilder builder = processor.newDocumentBuilder();
                     BuildingContentHandler handler = builder.newBuildingContentHandler();
-
-                    altBuilder.setHandler(handler);
-
-                    document.getTree(altBuilder);
+                    document.getTree(handler);
                     return handler.getDocumentNode().getUnderlyingNode();
                 }
 
@@ -382,18 +399,12 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 newOptions.setAssertValidXmlNames(false);
                 if ("json-tree".equals(format) || "json-text".equals(format)) {
                     SimpleTreeBuilder builder = new SimpleTreeBuilder(newOptions);
-
-                    altBuilder.setHandler(builder);
-
-                    document.getTree(altBuilder);
+                    document.getTree(builder);
                     SimpleTree tree = builder.getTree();
                     json = tree.asJSON();
                 } else {
                     DataTreeBuilder builder = new DataTreeBuilder(newOptions);
-
-                    altBuilder.setHandler(builder);
-
-                    document.getTree(altBuilder);
+                    document.getTree(builder);
                     DataTree tree = builder.getTree();
                     json = tree.asJSON();
                 }

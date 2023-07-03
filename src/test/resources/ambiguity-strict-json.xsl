@@ -14,7 +14,7 @@
 <xsl:template match="/">
   <xsl:variable name="grammar" select="'s: n+ . n: [''0''-''9'']+ .'"/>
   <xsl:variable name="parser"
-                select="cs:make-parser($grammar, map{'choose-alternative': f:choose#1,
+                select="cs:make-parser($grammar, map{'choose-alternative': f:choose#2,
                                                      'strictAmbiguity': true(),
                                                      'format': 'json'})"/>
   <doc>
@@ -22,12 +22,13 @@
   </doc>
 </xsl:template>
 
-<xsl:function name="f:choose" as="xs:integer">
-  <xsl:param name="alternatives" as="element()+"/>
+<xsl:function name="f:choose" as="map(*)">
+  <xsl:param name="context" as="element()"/>
+  <xsl:param name="options" as="map(*)"/>
+
   <!-- select the alternative that contains only a single 'n' -->
-  <!--<xsl:message select="$alternatives[1]!serialize(.,map{'method':'xml','indent':true()})"/>-->
-  <xsl:sequence
-      select="$alternatives[count(.//n) = 1 and .//n/@from = 0 and .//n/@to = 3]/@alternative/data()"/>
+  <xsl:variable name="id" select="$context/children[count(symbol)=1]/@id/string()"/>
+  <xsl:sequence select="map{'selection':$id}"/>
 </xsl:function>
 
 </xsl:stylesheet>
