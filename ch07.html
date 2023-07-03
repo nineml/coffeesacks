@@ -1,5 +1,8 @@
-<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" class="no-js"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><script>(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)</script><title>Chapter 7. Choosing among alternatives</title><link href="/css/pygments.css" rel="stylesheet"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link href="https://purl.org/dc/elements/1.1/" rel="schema.dc"/><meta name="dc.modified" content="2023-06-15T16:19:07Z"/><meta name="generator" content="DocBook xslTNG version 2.1.6 / cf0b935 / SAXON HE 12.1"/><link href="/css/docbook-toc.css" rel="stylesheet"/><link href="/css/docbook.css" rel="stylesheet" media="screen"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><script src="https://kit.fontawesome.com/498b6706f0.js" type="text/javascript" crossorigin="anonymous"></script><link href="icon/CoffeeSacks.png" rel="shortcut icon"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link href="css/nineml.css" rel="stylesheet"/><link href="css/coffeesacks.css" rel="stylesheet"/><link rel="prev" href="ch06.html"/><link rel="next" href="appa.html"/><link rel="up" href="index.html"/><link rel="home" href="index.html"/><script src="/js/persistent-toc.js" defer="defer"></script><script src="/js/copy-verbatim.js" defer="defer"></script><script src="/js/chunk-nav.js" defer="defer"></script></head><body><nav class="top"><span class="nav"><a title="CoffeeSacks" href="index.html"><i class="fas fa-home"></i></a> <a href="ch06.html" title="Chapter  6 .  RegisterCoffeeSacks"><i class="fas fa-arrow-left"></i></a> <a title="CoffeeSacks" href="index.html"><i class="fas fa-arrow-up"></i></a> <a title="Appendix  A .  Unicode Character Classes" href="appa.html"><i class="fas fa-arrow-right"></i></a></span><span class="title"><i class="title">CoffeeSacks</i></span></nav><main><section id="choose-alternative" db-chunk="ch07.html" db-id="d130e483" class="chapter component"><header><h2>Chapter <span class="label">7</span><span class="sep">. </span>Choosing among alternatives</h2></header>
+<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml" class="no-js"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><script>(function(H){H.className=H.className.replace(/\bno-js\b/,'js')})(document.documentElement)</script><title>Chapter 7. Choosing among alternatives</title><link href="/css/pygments.css" rel="stylesheet"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link href="https://purl.org/dc/elements/1.1/" rel="schema.dc"/><meta name="dc.modified" content="2023-07-03T07:04:53Z"/><meta name="generator" content="DocBook xslTNG version 2.1.6 / cf0b935 / SAXON HE 12.1"/><link href="/css/docbook-toc.css" rel="stylesheet"/><link href="/css/docbook.css" rel="stylesheet" media="screen"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><script src="https://kit.fontawesome.com/498b6706f0.js" type="text/javascript" crossorigin="anonymous"></script><link href="icon/CoffeeSacks.png" rel="shortcut icon"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><link href="css/nineml.css" rel="stylesheet"/><link href="css/coffeesacks.css" rel="stylesheet"/><link rel="prev" href="ch06.html"/><link rel="next" href="appa.html"/><link rel="up" href="index.html"/><link rel="home" href="index.html"/><script src="/js/persistent-toc.js" defer="defer"></script><script src="/js/copy-verbatim.js" defer="defer"></script><script src="/js/chunk-nav.js" defer="defer"></script></head><body><nav class="top"><span class="nav"><a title="CoffeeSacks" href="index.html"><i class="fas fa-home"></i></a> <a href="ch06.html" title="Chapter  6 .  RegisterCoffeeSacks"><i class="fas fa-arrow-left"></i></a> <a title="CoffeeSacks" href="index.html"><i class="fas fa-arrow-up"></i></a> <a title="Appendix  A .  Unicode Character Classes" href="appa.html"><i class="fas fa-arrow-right"></i></a></span><span class="title"><i class="title">CoffeeSacks</i></span></nav><main><section id="choose-alternative" db-chunk="ch07.html" db-id="d139e483" class="chapter component"><header><h2>Chapter <span class="label">7</span><span class="sep">. </span>Choosing among alternatives</h2></header>
 
+
+<div class="admonition note"><div><div class="icon">ⓘ</div><div class="body"><header><div class="title">Note</div></header><div><p>This API has been completely rewritten for version 3.0.0.</p>
+</div></div></div></div>
 
 <p>Where it’s practical to write a grammar that is unambiguous,
 that’s best. But it isn’t always practical. Sometimes it’s difficult,
@@ -17,45 +20,59 @@ examine the alternatives and select one. You can supply a
 must be a function that takes a single argument, a list of elements,
 and returns an integer.</p>
 
-<div class="admonition note"><div><div class="icon">ⓘ</div><div class="body"><header><div class="title">Note</div></header><div>
-<p>More than one approach to resolving ambiguity may be applied. For example,
-CoffeeFilter supports a “priority” pragma that lets the grammar author identify
-a preferred resolution. When the <code>choose-alternative</code> function is called,
-the first element in the list is always the currently selected alternative, if some
-previous process has been applied.</p>
-</div></div></div></div>
+<p>The function receives a context element that identifies its
+location in the parse forest and a map that describes the current
+state of the parse:</p>
 
-<p>The function must return an integer between 0 and the number of
-alternatives provided. The number is the alternative selected. A value
-of 0 indicates that the function did not select an alternative. The
-implementation may then go on to try other methods for selecting an
-alternative.</p>
+<div id="choose-alternative_informaltable1" class="informalobject informaltable"><table><thead>
+<tr><th>Property</th><th>Value</th></tr>
+</thead><tbody>
+<tr><td><code>input</code></td><td>The input string</td></tr>
+<tr><td><code>available-choices</code></td><td>A list of available choices</td></tr>
+<tr><td><code>other-choices</code></td><td>A list of other choices</td></tr>
+<tr><td><em class="replaceable">user-defined</em></td><td>User defined properties</td></tr>
+</tbody></table></div>
+
+<p>The function must return a map that contains a <code>selection</code> property that
+identifies the choice made. It may also return an <code>ambiguous-choice</code> property to
+indicate that an abitrary, ambiguous choice was made.</p>
+
+<p>Any other properties returned in the map will be passed back on the next call.
+This allows the selection function to maintain state between invocations.</p>
+
+<p>The function must return one of the choices passed to it. There will always be
+at least one item in the <code>choices</code> list. The difference between the available
+choices and the “other” choices is only relevant when the grammar contains a loop. If the
+grammar loops, the previously selected choices will be in <code>other-choices</code>.
+Only choose from that list if you have some other way to avoid looping infinitely.</p>
 
 <p>This function always selects the first alternative:</p>
 
-<div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="4"><pre class="language-xml numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;xsl:function</span> <span class="na">name=</span><span class="s">"f:first"</span> <span class="na">as=</span><span class="s">"xs:integer"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:param</span> <span class="na">name=</span><span class="s">"alts"</span> <span class="na">as=</span><span class="s">"element()+"</span><span class="nt">/&gt;</span></code></span></span>
-<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:sequence</span> <span class="na">select=</span><span class="s">"1"</span><span class="nt">/&gt;</span></code></span></span>
-<span class="line" db-line="4"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;/xsl:function&gt;</span></code></span></span>
+<div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="6"><pre class="language-xml long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">1 <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;xsl:function</span> <span class="na">name=</span><span class="s">"f:first"</span> <span class="na">as=</span><span class="s">"map(*)"</span><span class="nt">&gt;</span></code></span></span>
+<span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:param</span> <span class="na">name=</span><span class="s">"context"</span> <span class="na">as=</span><span class="s">"element()"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:param</span> <span class="na">name=</span><span class="s">"options"</span> <span class="na">as=</span><span class="s">"map(*)"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="4"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code> </code></span></span>
+<span class="line" db-line="5"><span class="ln">5 <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:sequence</span> <span class="na">select=</span><span class="s">"map { 'selection': $options?available-choices[1] }"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="6"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;/xsl:function&gt;</span></code></span></span>
 </pre></div>
 
 <p>You could pass it in parse options like this:</p>
 
 <div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="3"><pre class="language-xml numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;xsl:variable</span> <span class="na">name=</span><span class="s">"parser"</span></code></span></span>
 <span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>              <span class="na">select=</span><span class="s">"cs:make-parser($grammar,</span></code></span></span>
-<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="s">                      map{'choose-alternative': f:first#1})"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="s">                      map{'choose-alternative: f:first#2})"</span><span class="nt">/&gt;</span></code></span></span>
 </pre></div>
 
 <p>Of course, unconditionally choosing the first option isn’t very
 interesting. To explore further, consider this simple, ambiguous
 grammar:</p>
 
-<div class="pre-wrap" db-startinglinenumber="1" db-numberoflines="6"><pre class="language-ixml long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">1 <span class="nsep">|</span></span><span class="ld"><code> number-list: (number, -#a)+, number? .</code></span></span>
-<span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>-number: hex | decimal .</code></span></span>
-<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code> hex: hex-digit+ .</code></span></span>
-<span class="line" db-line="4"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code> decimal: decimal-digit+ .</code></span></span>
-<span class="line" db-line="5"><span class="ln">5 <span class="nsep">|</span></span><span class="ld"><code>-hex-digit: ["0"-"9" | "a"-"f" | "A"-"F" ] .</code></span></span>
-<span class="line" db-line="6"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>-decimal-digit: ["0"-"9" ] .</code></span></span>
+<div class="pre-wrap" db-startinglinenumber="1" db-numberoflines="6"><pre class="language-ixml long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">1 <span class="nsep">|</span></span><span class="ld"><code>   number-list = (number, -#a)+, number? .</code></span></span>
+<span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>        number = hex | decimal .</code></span></span>
+<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>           hex = hex-digit+ .</code></span></span>
+<span class="line" db-line="4"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>       decimal = decimal-digit+ .</code></span></span>
+<span class="line" db-line="5"><span class="ln">5 <span class="nsep">|</span></span><span class="ld"><code>    -hex-digit = ["0"-"9" | "a"-"f" | "A"-"F" ] .</code></span></span>
+<span class="line" db-line="6"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>-decimal-digit = ["0"-"9" ] .</code></span></span>
 </pre></div>
 
 <p>If we parse the following input,</p>
@@ -87,93 +104,52 @@ grammar:</p>
 Here’s a function that will always select the decimal alternative:
 </p>
 
-<div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="4"><pre class="language-xml numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;xsl:function</span> <span class="na">name=</span><span class="s">"f:choose-alternative"</span> <span class="na">as=</span><span class="s">"xs:integer"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:param</span> <span class="na">name=</span><span class="s">"alternatives"</span> <span class="na">as=</span><span class="s">"element()+"</span><span class="nt">/&gt;</span></code></span></span>
-<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:sequence</span> <span class="na">select=</span><span class="s">"$alternatives[decimal]/@alternative"</span><span class="nt">/&gt;</span></code></span></span>
-<span class="line" db-line="4"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;/xsl:function&gt;</span></code></span></span>
+<div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="9"><pre class="language-xml long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">1 <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;xsl:function</span> <span class="na">name=</span><span class="s">"f:choose"</span> <span class="na">as=</span><span class="s">"map(*)"</span><span class="nt">&gt;</span></code></span></span>
+<span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:param</span> <span class="na">name=</span><span class="s">"context"</span> <span class="na">as=</span><span class="s">"element()"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:param</span> <span class="na">name=</span><span class="s">"options"</span> <span class="na">as=</span><span class="s">"map(*)"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="4"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code> </code></span></span>
+<span class="line" db-line="5"><span class="ln">5 <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:variable</span> <span class="na">name=</span><span class="s">"choice"</span></code></span></span>
+<span class="line" db-line="6"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>                <span class="na">select=</span><span class="s">"$context/children[symbol[@name='decimal']]/@id"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="7"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code> </code></span></span>
+<span class="line" db-line="8"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  <span class="nt">&lt;xsl:sequence</span> <span class="na">select=</span><span class="s">"map { 'selection': $choice }"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="9"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;/xsl:function&gt;</span></code></span></span>
 </pre></div>
 
 <p>In order to understand how this works, we need to look at what’s
-passed to the function. The function get’s an XML description of the
-current state of the parse, where each element in the list represents
-an alternative. For the grammar and input above, what’s passed to the function is
-a sequence of two elements:</p>
+passed to the function. The function get’s a context element that is
+an XML description of the current state of the parse, and a map. For
+our example, the map would look something like this:</p>
 
-<div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="10"><pre class="language-xml long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln"> 1 <span class="nsep">|</span></span><span class="ld"><code>(<span class="nt">&lt;number</span> <span class="na">alternative=</span><span class="s">"1"</span> <span class="na">name=</span><span class="s">"number"</span> <span class="na">from=</span><span class="s">"9"</span> <span class="na">to=</span><span class="s">"11"</span> <span class="na">mark=</span><span class="s">"-"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="2"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;hex</span> <span class="na">name=</span><span class="s">"hex"</span> <span class="na">from=</span><span class="s">"9"</span> <span class="na">to=</span><span class="s">"11"</span> <span class="na">mark=</span><span class="s">"^"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="3"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>     <span class="nt">&lt;a:nonterminal</span> <span class="na">name=</span><span class="s">"$2_hex-digit-plus"</span> <span class="na">mark=</span><span class="s">"-"</span><span class="nt">&gt;</span>…<span class="nt">&lt;/a:nonterminal&gt;</span></code></span></span>
-<span class="line" db-line="4"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;/hex&gt;</span></code></span></span>
-<span class="line" db-line="5"><span class="ln"> 5 <span class="nsep">|</span></span><span class="ld"><code> <span class="nt">&lt;/number&gt;</span>,</code></span></span>
-<span class="line" db-line="6"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code> <span class="nt">&lt;number</span> <span class="na">alternative=</span><span class="s">"2"</span> <span class="na">name=</span><span class="s">"number"</span> <span class="na">from=</span><span class="s">"9"</span> <span class="na">to=</span><span class="s">"11"</span> <span class="na">mark=</span><span class="s">"-"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="7"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;decimal</span> <span class="na">name=</span><span class="s">"decimal"</span> <span class="na">from=</span><span class="s">"9"</span> <span class="na">to=</span><span class="s">"11"</span> <span class="na">mark=</span><span class="s">"^"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="8"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>     <span class="nt">&lt;a:nonterminal</span> <span class="na">name=</span><span class="s">"$3_decimal-digit-plus"</span> <span class="na">mark=</span><span class="s">"-"</span><span class="nt">&gt;</span>…<span class="nt">&lt;/a:nonterminal&gt;</span></code></span></span>
-<span class="line" db-line="9"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;/decimal&gt;</span></code></span></span>
-<span class="line" db-line="10"><span class="ln">10 <span class="nsep">|</span></span><span class="ld"><code> <span class="nt">&lt;/number&gt;</span>)</code></span></span>
+<div class="pre-wrap" db-startinglinenumber="1" db-numberoflines="7"><pre class="language-none long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">1 <span class="nsep">|</span></span><span class="ld"><code>map {</code></span></span>
+<span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  "input":"bad</code></span></span>
+<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>cafe</code></span></span>
+<span class="line" db-line="4"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>42",</code></span></span>
+<span class="line" db-line="5"><span class="ln">5 <span class="nsep">|</span></span><span class="ld"><code>  "available-choices": ("C3464","C3465"),</code></span></span>
+<span class="line" db-line="6"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>  "other-choices":()</code></span></span>
+<span class="line" db-line="7"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>}</code></span></span>
 </pre></div>
 
-<p>Each alternative is identified with its number, name, the range of tokens it covers, and its mark.
-The content of each alternative is the sequence of literals and nonterminals that are the
-“right hand side” of this alternative. For example, the first alternative above includes:</p>
+<p>And the context element like this:</p>
 
-<div class="programlistingco"><div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="13"><pre class="language-xml long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln"> 1 <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;number</span> <span class="na">alternative=</span><span class="s">"1"</span>                          <a id="alt_alt" class="callout-bug linecolumn" db-line="1" db-column="50">①</a></code></span></span>
-<span class="line" db-line="2"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>        <span class="na">name=</span><span class="s">"number"</span>                            <a id="alt_name" class="callout-bug linecolumn" db-line="2" db-column="50">②</a></code></span></span>
-<span class="line" db-line="3"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>        <span class="na">from=</span><span class="s">"9"</span> <span class="na">to=</span><span class="s">"11"</span>                         <a id="alt_range" class="callout-bug linecolumn" db-line="3" db-column="50">③</a></code></span></span>
-<span class="line" db-line="4"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>        <span class="na">mark=</span><span class="s">"-"</span><span class="nt">&gt;</span>                                <a id="alt_mark" class="callout-bug linecolumn" db-line="4" db-column="50">④</a></code></span></span>
-<span class="line" db-line="5"><span class="ln"> 5 <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;hex</span> <span class="na">name=</span><span class="s">"hex"</span>                                         <a id="alt_name_area2" class="callout-bug linecolumn" db-line="5" db-column="60">②</a></code></span></span>
-<span class="line" db-line="6"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>        <span class="na">from=</span><span class="s">"9"</span> <span class="na">to=</span><span class="s">"11"</span>                                   <a id="alt_range_area2" class="callout-bug linecolumn" db-line="6" db-column="60">③</a></code></span></span>
-<span class="line" db-line="7"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>        <span class="na">mark=</span><span class="s">"^"</span><span class="nt">&gt;</span>                                          <a id="alt_mark_area2" class="callout-bug linecolumn" db-line="7" db-column="60">④</a></code></span></span>
-<span class="line" db-line="8"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>      <span class="nt">&lt;a:nonterminal</span> <span class="na">name=</span><span class="s">"$2_hex-digit-plus"</span>    <a id="alt_ntname" class="callout-bug linecolumn" db-line="8" db-column="50">⑤</a></code></span></span>
-<span class="line" db-line="9"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>                     <span class="na">mark=</span><span class="s">"-"</span><span class="nt">&gt;</span>                             <a id="alt_mark_area3" class="callout-bug linecolumn" db-line="9" db-column="60">④</a></code></span></span>
-<span class="line" db-line="10"><span class="ln">10 <span class="nsep">|</span></span><span class="ld"><code>        …                                        <a id="alt_content" class="callout-bug linecolumn" db-line="10" db-column="50">⑥</a></code></span></span>
-<span class="line" db-line="11"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>      <span class="nt">&lt;/a:nonterminal&gt;</span></code></span></span>
-<span class="line" db-line="12"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;/hex&gt;</span></code></span></span>
-<span class="line" db-line="13"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;/number&gt;</span></code></span></span>
-</pre></div></div>
-
-<div class="calloutlist"><dl><dt class="callout"><a class="callout-bug" href="#alt_alt">①</a></dt><dd>
-<p>The alternatives are numbered. Return this number to select this alternative.
-The sequence of alternatives is also ordered by alternative number.</p>
-</dd><dt class="callout"><a class="callout-bug" href="#alt_name">②</a></dt><dd>
-<p>The name of the nonterminal is provided. The name is always provided in an attribute
-for convenience in the case where the element in the tree and the nonterminal have different
-names (see <a href="#alt_ntname" class="xref xref-area"><span class="label">⑤</span></a>).</p>
-</dd><dt class="callout"><a class="callout-bug" href="#alt_range">③</a></dt><dd>
-<p>This is the range of characters (tokens) in the input covered by this nonterminal.</p>
-</dd><dt class="callout"><a class="callout-bug" href="#alt_mark">④</a></dt><dd>
-<p>This is the mark associated with the nonterminal.</p>
-</dd><dt class="callout"><a class="callout-bug" href="#alt_ntname">⑤</a></dt><dd>
-<p>When the nonterminal has been created by the parser, the element name and the
-nonterminal name are different. See <a href="#grammar-details" class="xref xref-section">Section <span class="label">7<span class="sep">.</span>1</span>, “Grammar details”</a>.</p>
-</dd><dt class="callout"><a class="callout-bug" href="#alt_content">⑥</a></dt><dd>
-<p>An ellipsis appears where content will appear “further down” in the tree.</p>
-</dd></dl></div>
-
-<p>The sequence of nodes passed to the function are the
-alternatives, but that isn’t the whole story.
-The alternatives will include additional context if they are not
-the root of the result tree. For example, the whole tree associated with the
-first alternative in this case is:</p>
-
-<div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="12"><pre class="language-xml long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln"> 1 <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;number-list</span> <span class="na">xmlns:a=</span><span class="s">"https://nineml.org/ns/describe-ambiguity"</span></code></span></span>
-<span class="line" db-line="2"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>             <span class="na">a:version=</span><span class="s">"1.0"</span></code></span></span>
-<span class="line" db-line="3"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>             <span class="na">name=</span><span class="s">"number-list"</span></code></span></span>
-<span class="line" db-line="4"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>             <span class="na">mark=</span><span class="s">"^"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="5"><span class="ln"> 5 <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;number</span> <span class="na">name=</span><span class="s">"number"</span><span class="nt">/&gt;</span></code></span></span>
-<span class="line" db-line="6"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;number</span> <span class="na">name=</span><span class="s">"number"</span><span class="nt">/&gt;</span></code></span></span>
-<span class="line" db-line="7"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;number</span> <span class="na">alternative=</span><span class="s">"1"</span> <span class="na">name=</span><span class="s">"number"</span> <span class="na">from=</span><span class="s">"9"</span> <span class="na">to=</span><span class="s">"11"</span> <span class="na">mark=</span><span class="s">"^"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="8"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>      <span class="nt">&lt;hex</span> <span class="na">name=</span><span class="s">"hex"</span> <span class="na">from=</span><span class="s">"9"</span> <span class="na">to=</span><span class="s">"11"</span> <span class="na">mark=</span><span class="s">"^"</span><span class="nt">&gt;</span></code></span></span>
-<span class="line" db-line="9"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>         <span class="nt">&lt;a:nonterminal</span> <span class="na">name=</span><span class="s">"$2_hex-digit-plus"</span> <span class="na">mark=</span><span class="s">"-"</span><span class="nt">&gt;</span>…<span class="nt">&lt;/a:nonterminal&gt;</span></code></span></span>
-<span class="line" db-line="10"><span class="ln">10 <span class="nsep">|</span></span><span class="ld"><code>      <span class="nt">&lt;/hex&gt;</span></code></span></span>
-<span class="line" db-line="11"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;/number&gt;</span></code></span></span>
-<span class="line" db-line="12"><span class="ln">   <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;/number-list&gt;</span></code></span></span>
+<div class="pre-wrap highlight" db-startinglinenumber="1" db-numberoflines="9"><pre class="language-xml long numbered programlisting verbatim verblines"><span class="line" db-line="1"><span class="ln">1 <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;symbol</span> <span class="na">name=</span><span class="s">"number"</span> <span class="na">id=</span><span class="s">"N3694"</span> <span class="na">mark=</span><span class="s">"^"</span> <span class="na">start=</span><span class="s">"10"</span> <span class="na">length=</span><span class="s">"2"</span><span class="nt">&gt;</span></code></span></span>
+<span class="line" db-line="2"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;parent</span> <span class="na">ref=</span><span class="s">"N3695"</span><span class="nt">&gt;</span>$4_number-option<span class="nt">&lt;/parent&gt;</span></code></span></span>
+<span class="line" db-line="3"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;children</span> <span class="na">id=</span><span class="s">"C3464"</span> <span class="na">priority=</span><span class="s">"0"</span><span class="nt">&gt;</span></code></span></span>
+<span class="line" db-line="4"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>      <span class="nt">&lt;symbol</span> <span class="na">name=</span><span class="s">"hex"</span> <span class="na">ref=</span><span class="s">"N3692"</span> <span class="na">start=</span><span class="s">"10"</span> <span class="na">length=</span><span class="s">"2"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="5"><span class="ln">5 <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;/children&gt;</span></code></span></span>
+<span class="line" db-line="6"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;children</span> <span class="na">id=</span><span class="s">"C3465"</span> <span class="na">priority=</span><span class="s">"0"</span><span class="nt">&gt;</span></code></span></span>
+<span class="line" db-line="7"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>      <span class="nt">&lt;symbol</span> <span class="na">name=</span><span class="s">"decimal"</span> <span class="na">ref=</span><span class="s">"N3693"</span> <span class="na">start=</span><span class="s">"10"</span> <span class="na">length=</span><span class="s">"2"</span><span class="nt">/&gt;</span></code></span></span>
+<span class="line" db-line="8"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code>   <span class="nt">&lt;/children&gt;</span></code></span></span>
+<span class="line" db-line="9"><span class="ln">  <span class="nsep">|</span></span><span class="ld"><code><span class="nt">&lt;/symbol&gt;</span></code></span></span>
 </pre></div>
 
-<p>The context includes all of the ancestors of the point where a
-choice must be made and the number of preceding siblings. Preceding
-siblings are identified simply by name.</p>
-
-<p>This example doesn’t include any matched literal tokens, but if they are present,
-they are wrapped in <code class="tag tag-element">a:literal</code> elements.</p>
+<p>This is a choice being made for the symbol “number”. There are
+two choices, identified by “children”. In this example, each of the
+alternatives is a single symbol, but the context can be more complex.
+For each symbol, we also get the range of characters that it covers in
+the input. For each choice, it’s computed priority. The context is
+always the specific choice that’s being made, but the whole forest is
+available. Each of the “N” references can be used to find the
+corresponding nodes for those symbols.</p>
 
 <p>Which aspects of the context (if any) are relevant is going to
 depend on your grammar and the input.</p>
