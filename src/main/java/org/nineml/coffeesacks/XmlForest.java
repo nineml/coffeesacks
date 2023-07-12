@@ -16,6 +16,7 @@ public class XmlForest {
     private final Processor processor;
     private final boolean maxPriorityStyle;
     private final ParseForest graph;
+    private final ParserOptions options;
     private Stack<ForestNode> nodeStack = new Stack<>();
     private HashMap<ForestNode, HashSet<ForestNode>> parents = new HashMap<>();
     private HashMap<ForestNode, ArrayList<ChildList>> children = new HashMap<>();
@@ -29,6 +30,7 @@ public class XmlForest {
         this.processor = processor;
         this.maxPriorityStyle = "max".equals(document.getOptions().getPriorityStyle());
         this.graph = document.getResult().getForest();
+        this.options = document.getOptions();
         this.doc = null;
         if (document.succeeded()) {
             constructXml();
@@ -247,7 +249,7 @@ public class XmlForest {
     }
 
     private AttributeBuilder newAttributes() {
-        return new AttributeBuilder((ParserOptions) graph.getOptions());
+        return new AttributeBuilder(options);
     }
 
     private AttributeBuilder newAttributes(String name, String value) {
