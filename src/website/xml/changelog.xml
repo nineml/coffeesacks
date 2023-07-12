@@ -10,6 +10,18 @@
 
 <revhistory>
 <revision>
+<revnumber>3.0.0e</revnumber>
+<date>2023-07-12</date>
+<revdescription>
+<para>This is a beta release for version 3.0.0. There are a lot of
+underlying changes in this release.</para>
+<para>Version 3.0.0e depends on CoffeeGrinder and CoffeeFilter 3.0.0e which fix
+a few bugs. Also fixed a bug in CoffeeSacks where attempting to parse a forest would raise
+a ClassCastException.</para>
+</revdescription>
+</revision>
+
+<revision>
 <revnumber>3.0.0d</revnumber>
 <date>2023-07-11</date>
 <revdescription>
@@ -19,7 +31,6 @@ underlying changes in this release.</para>
 a few bugs and make a few improvements.</para>
 </revdescription>
 </revision>
-
 <revision>
 <revnumber>3.0.0c</revnumber>
 <date>2023-07-09</date>
