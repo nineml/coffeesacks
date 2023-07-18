@@ -130,7 +130,7 @@ public class StylesheetTests extends TestConfiguration {
     public void resolveAmbiguityFunctionJson() {
         XdmNode stylesheet = loadStylesheet("src/test/resources/ambiguity-json.xsl");
         XdmNode result = transform(stylesheet, stylesheet);
-        Assert.assertEquals("<doc>{ \"s\":{ \"n\":123 } }</doc>", serialize(result));
+        Assert. assertEquals("<doc>{ \"s\":{ \"n\":123 } }</doc>", serialize(result));
     }
 
     @Test

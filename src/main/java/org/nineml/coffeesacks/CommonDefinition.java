@@ -17,7 +17,6 @@ import net.sf.saxon.trans.XPathException;
 import net.sf.saxon.tree.iter.AtomicIterator;
 import net.sf.saxon.type.FunctionItemType;
 import net.sf.saxon.type.SpecificFunctionType;
-import net.sf.saxon.type.Type;
 import net.sf.saxon.value.AnyURIValue;
 import net.sf.saxon.value.AtomicValue;
 import net.sf.saxon.value.SequenceType;
@@ -26,10 +25,8 @@ import org.nineml.coffeefilter.InvisibleXml;
 import org.nineml.coffeefilter.InvisibleXmlDocument;
 import org.nineml.coffeefilter.InvisibleXmlParser;
 import org.nineml.coffeefilter.ParserOptions;
-import org.nineml.coffeefilter.trees.DataTree;
-import org.nineml.coffeefilter.trees.DataTreeBuilder;
-import org.nineml.coffeefilter.trees.SimpleTree;
-import org.nineml.coffeefilter.trees.SimpleTreeBuilder;
+import org.nineml.coffeefilter.trees.*;
+import org.nineml.coffeegrinder.trees.Arborist;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -383,14 +380,15 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                     throw new XPathException(ex);
                 }
 
-                XPathTreeSelector selector = new XPathTreeSelector(processor, parser, forest, input);
-                selector.setChooseFunction(context, chooseAlternative);
-                document.setTreeSelector(selector);
+                XPathAxe axe = new XPathAxe(processor, parser, forest, input);
+                axe.setChooseFunction(context, chooseAlternative);
+
+                Arborist arborist = document.getResult().getArborist(axe);
 
                 if ("xml".equals(format)) {
-                    DocumentBuilder builder = processor.newDocumentBuilder();
-                    BuildingContentHandler handler = builder.newBuildingContentHandler();
-                    document.getTree(handler);
+                    DocumentBuilder docBuilder = processor.newDocumentBuilder();
+                    BuildingContentHandler handler = docBuilder.newBuildingContentHandler();
+                    arborist.getTree(document.getAdapter(handler));
                     return handler.getDocumentNode().getUnderlyingNode();
                 }
 
@@ -398,14 +396,14 @@ public abstract class CommonDefinition extends ExtensionFunctionDefinition {
                 ParserOptions newOptions = new ParserOptions();
                 newOptions.setAssertValidXmlNames(false);
                 if ("json-tree".equals(format) || "json-text".equals(format)) {
-                    SimpleTreeBuilder builder = new SimpleTreeBuilder(newOptions);
-                    document.getTree(builder);
-                    SimpleTree tree = builder.getTree();
+                    SimpleTreeBuilder simpleBuilder = new SimpleTreeBuilder(newOptions);
+                    arborist.getTree(document.getAdapter(simpleBuilder));
+                    SimpleTree tree = simpleBuilder.getTree();
                     json = tree.asJSON();
                 } else {
-                    DataTreeBuilder builder = new DataTreeBuilder(newOptions);
-                    document.getTree(builder);
-                    DataTree tree = builder.getTree();
+                    DataTreeBuilder dataBuilder = new DataTreeBuilder(newOptions);
+                    arborist.getTree(document.getAdapter(dataBuilder));
+                    DataTree tree = dataBuilder.getTree();
                     json = tree.asJSON();
                 }
 
