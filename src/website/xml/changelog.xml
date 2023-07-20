@@ -10,16 +10,25 @@
 
 <revhistory>
 <revision>
-<revnumber>3.0.0f</revnumber>
-<date>2023-07-18</date>
+<revnumber>3.0.0g</revnumber>
+<date>2023-07-20</date>
 <revdescription>
 <para>This is a beta release for version 3.0.0. There are a lot of
 underlying changes in this release.</para>
+<para>Version 3.0.0g depends on CoffeeGrinder and CoffeeFilter 3.0.0g. This
+release just updates the dependencies as a user convenience.
+</para>
+</revdescription>
+</revision>
+
+<revision>
+<revnumber>3.0.0f</revnumber>
+<date>2023-07-18</date>
+<revdescription>
 <para>There’s been a significant refactor in CoffeeGrinder 3.0.0f which is reflected in
 the APIs here.</para>
 </revdescription>
 </revision>
-
 <revision>
 <revnumber>3.0.0e</revnumber>
 <date>2023-07-12</date>
