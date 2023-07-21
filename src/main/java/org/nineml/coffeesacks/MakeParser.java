@@ -33,6 +33,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A Saxon extension function to make a grammar from the text of an Invisible XML grammar.
+ * <p>Making a parser returns a parser function that uses the specified grammar.</p>
+ */
 public class MakeParser extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "make-parser");

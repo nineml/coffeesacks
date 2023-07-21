@@ -10,7 +10,6 @@ import java.nio.charset.StandardCharsets;
  * it even when using Saxon 9.x and 10.x. At some point in the future when that's no longer
  * necessary, it should be removed.</p>
  */
-
 public class URIUtils {
     private static Boolean isWindows = null;
 

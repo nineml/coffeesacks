@@ -9,6 +9,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+/**
+ * Namespace utilities (an implementation detail).
+ * <p>The Saxon APIs change over time. This class uses reflection to support Saxon 10, 11, or 12
+ * simultaneously.</p>
+ */
 public class NamespaceUtils {
     public static FingerprintedQName fqName(QName qname) throws CoffeeSacksException {
         Method getns;

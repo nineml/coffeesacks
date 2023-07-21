@@ -2,6 +2,10 @@ package org.nineml.coffeesacks;
 
 import org.nineml.logging.Logger;
 
+/**
+ * A logger adapter between {@link org.nineml.logging.Logger} and
+ * {@link net.sf.saxon.lib.Logger}.
+ */
 public class SacksLogger extends Logger {
     private final net.sf.saxon.lib.Logger logger;
     

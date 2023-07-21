@@ -7,6 +7,7 @@ import net.sf.saxon.s9api.QName;
 import net.sf.saxon.s9api.XdmNode;
 import net.sf.saxon.trans.XPathException;
 
+/** The (Runtime) exceptions thrown. */
 public class CoffeeSacksException extends XPathException {
     public static final String COFFEE_SACKS_ERROR_PREFIX = "cse";
     public static final String COFFEE_SACKS_ERROR_NAMESPACE = "http://nineml.com/ns/coffeesacks/errors";

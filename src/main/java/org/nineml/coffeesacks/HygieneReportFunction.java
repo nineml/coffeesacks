@@ -36,11 +36,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * A Saxon extension function load an Invisible XML grammar.
- * <p>Assuming the <code>cs:</code> prefix is bound to the CoffeeSacks namespace,
- * <code>cs:grammar(href [, options])</code> loads a grammar.
- * </p>
- */public class HygieneReportFunction extends CommonDefinition {
+ * A Saxon extension function to obtain the hygiene report for a grammar.
+ */
+public class HygieneReportFunction extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "hygiene-report");
 
