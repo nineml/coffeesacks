@@ -20,6 +20,10 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * A Saxon extension function to load a grammar from a URI.
+ * <p>Loading a grammar returns a parser function that uses the loaded grammar.</p>
+ */
 public class LoadGrammar extends CommonDefinition {
     private static final StructuredQName qName =
             new StructuredQName("", "http://nineml.com/ns/coffeesacks", "load-grammar");

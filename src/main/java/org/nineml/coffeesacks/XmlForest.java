@@ -11,6 +11,11 @@ import org.xml.sax.SAXException;
 
 import java.util.*;
 
+/** Constructs an XML representation of the parser forest.
+ * <p>The {@link XPathAxe} gets to see this representation when making choices about ambiguous parses.
+ * Because the forest is a graph, not a tree, all of the nodes in this representation are siblings.
+ * Parent and child (tree) relationships are expressed with links.</p>
+ */
 public class XmlForest {
     private static final QName _id = new QName("id");
     private final Processor processor;

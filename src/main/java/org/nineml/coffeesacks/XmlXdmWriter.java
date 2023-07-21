@@ -7,6 +7,9 @@ import org.xml.sax.SAXException;
 
 import java.util.Map;
 
+/**
+ * An {@link XmlWriter} that produces Saxon {@link XdmNode}s.
+ */
 public class XmlXdmWriter extends XmlWriter {
     private final BuildingContentHandler handler;
 

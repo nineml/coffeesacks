@@ -18,6 +18,12 @@ import org.nineml.coffeegrinder.trees.ParseTree;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The {@link Axe} used by CoffeeSacks to choose between ambiguous alternatives.
+ * <p>At the moment, this is <em>not</em> a specialist axe. To implement more general
+ * selections (random ones, for example), some provision would have to be made for creating
+ * either a "normal" or a specialist axe. TBD.</p>
+ */
 public class XPathAxe implements Axe {
     public static final XdmAtomicValue _input = new XdmAtomicValue("input");
     public static final XdmAtomicValue _forest = new XdmAtomicValue("forest");
@@ -51,6 +57,7 @@ public class XPathAxe implements Axe {
 
     @Override
     public boolean isSpecialist() {
+        // Fix JavaDoc if you change this.
         return false;
     }
 
