@@ -10,17 +10,25 @@
 
 <revhistory>
 <revision>
-<revnumber>3.0.0h</revnumber>
-<date>2023-07-21</date>
+<revnumber>3.0.0i</revnumber>
+<date>2023-07-22</date>
 <revdescription>
 <para>This is a beta release for version 3.0.0. There are a lot of
 underlying changes in this release.</para>
+<para>Updates build dependencies.
+</para>
+</revdescription>
+</revision>
+
+<revision>
+<revnumber>3.0.0h</revnumber>
+<date>2023-07-21</date>
+<revdescription>
 <para>Updates build dependencies; improves JavaDoc, removes
 a dead class.
 </para>
 </revdescription>
 </revision>
-
 <revision>
 <revnumber>3.0.0g</revnumber>
 <date>2023-07-20</date>
